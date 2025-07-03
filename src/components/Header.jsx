@@ -16,7 +16,7 @@ export default function Header() {
         color: '#666',
         margin: 0,
         fontSize: '1.1rem'
-      }}>Mis contactos importantes ⭐</p>
+      }}>My important contact ⭐</p>
     </header>
   );
 }

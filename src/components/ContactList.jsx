@@ -1,19 +1,8 @@
 import ContactCard from "./ContactCard"
 
-const ContactList = () => {
+const ContactList = ({contact, toggleFavorite}) => {
   return (
-        <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '1rem'
-        }}>
-            <ContactCard />
-            <ContactCard />
-            <ContactCard />
-            <ContactCard />
-            <ContactCard />
-            <ContactCard />
-        </div>
+  <ContactCard contact={contact} toggleFavorite={toggleFavorite}/>
   );
 };
 
