@@ -4,6 +4,8 @@ import Header from "./components/Header";
 import ContactList from "./components/ContactList";
 import ContactCard from "./components/ContactCard";
 import Footer from "./components/Footer";
+import ContactSelected from "./components/ContactSelected";
+import Filters from "./components/Filters";
 
 function App() {
   // Hook para manejar el estado del contacto seleccionado
@@ -49,6 +51,7 @@ function App() {
    */
   const handleSelectContact = (contact) => {
     // console.log(contact);
+    alert("Contacto Selecionado" + ' ' +contact.name);
     setSelectContact(contact);
   }
 
@@ -64,6 +67,27 @@ function App() {
       setSelectContact(null);
     }
   };
+
+  function handlerClearContacts () {
+    setSelectContact(null);
+    setShowOnlyFavorites(false);
+  }
+
+const handleNextContact = (selectContact) => {
+  // buscar el índice del contacto seleccionado
+  const currentIndex = contactsToShow.findIndex(
+    (contact) => contact.id === selectContact.id
+  );
+
+  // si el contacto seleccionado es el último, seleccionar el primero
+  if (currentIndex === contactsToShow.length - 1) {
+    setSelectContact(contactsToShow[0]);
+    return;
+  }
+
+  // seleccionar el siguiente contacto
+    setSelectContact(contactsToShow[currentIndex + 1]);
+};
 
   const handleChangeAllFavorite = (event) => {
     // console.log(event);
@@ -127,95 +151,9 @@ function App() {
       <div>
         <Header />
         <main>
-          <section>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem',
-              backgroundColor: '#b7b1b0',
-              borderRadius: '8px',
-              margin: '1rem 0'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <input
-                  type="checkbox"
-                  id="showOnlyFavorites"
-                  checked={showOnlyFavorites}
-                  onChange={handleChangeFavorite}
-                  style={{
-                    cursor: 'pointer',
-                    width: '18px',
-                    height: '18px'
-                  }}
-                />
-                <label
-                  htmlFor="showOnlyFavorites"
-                  style={{
-                    fontSize: '0.9rem',
-                    color: '#666'
-                  }}
-                >Show favorites</label>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <input
-                  type="checkbox"
-                  id="markAllFavorites"
-                  onChange={handleChangeAllFavorite}
-                  style={{
-                    cursor: 'pointer',
-                    width: '18px',
-                    height: '18px'
-                  }}
-                />
-                <label
-                  htmlFor="markAllFavorites"
-                  style={{
-                    fontSize: '0.9rem',
-                    color: '#666'
-                  }}
-                >Mark/Unmark favorites to all</label>
-              </div>
-
-              <label style={{
-                marginLeft: 'auto',
-                fontSize: '0.9rem',
-                color: '#666',
-                fontWeight: '500'
-              }}>1 of {contacts.length} contacts</label>
-            </div>
-          </section>
-          <section
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "1rem",
-            }}
-          >
-            {contactsToShow.map((contact) => (
-              <div key={contact.id} onClick={() => handleSelectContact(contact)}>
-                <ContactList contact={contact} toggleFavorite={toggleFavorite} />
-              </div>
-            ))}
-          </section>
-          <section
-            style={{
-              justifyItems: "center",
-              alignItems: "center"
-            }}
-            >
-            {selectContact ? <h3>Contacto Selecionado</h3> : null}
-            {selectContact ? <ContactCard contact={selectContact} toggleFavorite={toggleFavorite} /> : null}
-          </section>
+          <Filters showOnlyFavorites={showOnlyFavorites} handleChangeFavorite={handleChangeFavorite} handleChangeAllFavorite={handleChangeAllFavorite} contacts={contacts} handlerClearContacts={handlerClearContacts} handleNextContact={handleNextContact}/>
+          <ContactList contactsToShow={contactsToShow} toggleFavorite={toggleFavorite} handleSelectContact={handleSelectContact} handleNextContact={handleNextContact} selectContact={selectContact}/>
+          <ContactSelected selectContact={selectContact} toggleFavorite={toggleFavorite} handleNextContact={handleNextContact}/>
           <Footer />
         </main>
       </div>
