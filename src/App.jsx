@@ -167,13 +167,24 @@ function App() {
   };
 
   return (
-    <>
-      <div>
+    <div className="min-h-screen w-full bg-[#020617] relative">
+      {/* Magenta Orb Grid Background */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background: "#020617",
+          backgroundImage: `
+            linear-gradient(to right, rgba(71,85,105,0.15) 1px, transparent 1px), 
+            linear-gradient(to bottom, rgba(71,85,105,0.15) 1px, transparent 1px), 
+            radial-gradient(circle at 50% 60%, rgba(236,72,153,0.15) 0%, rgba(168,85,247,0.05) 40%, transparent 70%)
+          `,
+          backgroundSize: "40px 40px, 40px 40px, 100% 100%",
+        }}
+      />
+      
+      <div className="relative z-10 flex flex-col min-h-screen">
         <Header />
-        <main>
-          <ContactForm 
-          handleAddContact = {handleAddContact}
-          />
+        <main className="flex-grow container mx-auto px-4 py-6">
           <Filters
             showOnlyFavorites={showOnlyFavorites}
             handleChangeFavorite={handleChangeFavorite}
@@ -182,22 +193,37 @@ function App() {
             handlerClearContacts={handlerClearContacts}
             handleNextContact={handleNextContact}
           />
-          <ContactList
-            contactsToShow={contactsToShow}
-            toggleFavorite={toggleFavorite}
-            handleSelectContact={handleSelectContact}
-            handleNextContact={handleNextContact}
-            selectContact={selectContact}
-          />
-          <ContactSelected
-            selectContact={selectContact}
-            toggleFavorite={toggleFavorite}
-            handleNextContact={handleNextContact}
-          />
-          <Footer />
+          
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold text-white/90">Contacts</h2>
+              <ContactList
+                contactsToShow={contactsToShow}
+                toggleFavorite={toggleFavorite}
+                handleSelectContact={handleSelectContact}
+                handleNextContact={handleNextContact}
+                selectContact={selectContact}
+              />
+            </div>
+            
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold text-white/90">Add New Contact</h2>
+              <ContactForm handleAddContact={handleAddContact} />
+              
+              <div className="mt-8">
+                <h2 className="text-xl font-bold text-white/90 mb-4">Selected Contact</h2>
+                <ContactSelected
+                  selectContact={selectContact}
+                  toggleFavorite={toggleFavorite}
+                  handleNextContact={handleNextContact}
+                />
+              </div>
+            </div>
+          </div>
         </main>
+        <Footer />
       </div>
-    </>
+    </div>
   );
 }
 
