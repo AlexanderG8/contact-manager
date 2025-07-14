@@ -1,6 +1,6 @@
 import ContactCard from "./ContactCard";
 
-export default function ContactSelected({selectContact, toggleFavorite, handleNextContact}){
+export default function ContactSelected({selectContact, toggleFavorite, handleNextContact, searchTerm, onEditContact}){
     return(
         <section className="w-full">
             {selectContact ? (
@@ -9,6 +9,8 @@ export default function ContactSelected({selectContact, toggleFavorite, handleNe
                     toggleFavorite={toggleFavorite} 
                     handleNextContact={handleNextContact} 
                     selectContact={selectContact}
+                    searchTerm={searchTerm}
+                    onEdit={onEditContact}
                 />
             ) : (
                 <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-700/50 p-8 text-center">

@@ -6,6 +6,8 @@ const ContactList = ({
   handleSelectContact,
   handleNextContact,
   selectContact,
+  searchTerm,
+  onEditContact,
 }) => {
   return (
     <section className="w-full">
@@ -28,6 +30,8 @@ const ContactList = ({
                 toggleFavorite={toggleFavorite}
                 handleNextContact={handleNextContact}
                 selectContact={selectContact}
+                searchTerm={searchTerm}
+                onEdit={onEditContact}
               />
             </div>
           ))}

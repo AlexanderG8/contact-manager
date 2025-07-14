@@ -1,5 +1,45 @@
-export default function ContactCard({contact, toggleFavorite, handleNextContact, selectContact}) {
+import { useState } from "react";
+
+export default function ContactCard({contact, toggleFavorite, handleNextContact, selectContact, searchTerm, onEdit}) {
   const isSelected = selectContact?.id === contact.id;
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // Colores para las categorías (Reto Final 1)
+  const categoryColors = {
+    trabajo: {
+      bg: "bg-blue-500/20",
+      text: "text-blue-400",
+      border: "border-blue-500/30",
+      color: "#2563eb"
+    },
+    personal: {
+      bg: "bg-green-500/20",
+      text: "text-green-400",
+      border: "border-green-500/30",
+      color: "#16a34a"
+    },
+    familia: {
+      bg: "bg-orange-500/20",
+      text: "text-orange-400",
+      border: "border-orange-500/30",
+      color: "#ea580c"
+    }
+  };
+  
+  // Obtener los estilos de la categoría del contacto
+  const getCategoryStyles = () => {
+    if (!contact.category || !categoryColors[contact.category]) {
+      return {
+        bg: "bg-slate-500/20",
+        text: "text-slate-400",
+        border: "border-slate-500/30",
+        color: "#64748b"
+      };
+    }
+    return categoryColors[contact.category];
+  };
+  
+  const categoryStyle = getCategoryStyles();
   
   return (
     <div className={`relative overflow-hidden backdrop-blur-sm rounded-xl border transition-all duration-300 ${isSelected 
@@ -9,11 +49,41 @@ export default function ContactCard({contact, toggleFavorite, handleNextContact,
       {/* Card content */}
       <div className="p-5">
         <div className="flex justify-between items-start mb-3">
-          <h3 className="text-white font-medium text-lg truncate">{contact?.name}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-white font-medium text-lg truncate">
+              {searchTerm ? (
+                <span dangerouslySetInnerHTML={{ 
+                  __html: contact?.name.replace(
+                    new RegExp(searchTerm, 'gi'), 
+                    match => `<mark class="bg-pink-500/30 text-white px-1 rounded">${match}</mark>`
+                  ) 
+                }} />
+              ) : (
+                contact?.name
+              )}
+            </h3>
+            
+            
+          </div>
+          {/* Botón de editar (Reto Final 3) */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit && onEdit(contact);
+            }}
+            className={`ml-2 p-1.5 rounded-full transition-all ${isHovered ? "bg-slate-700/50" : ""}`}
+            title="Edit contact"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400 hover:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+          
           <button
             className={`text-lg transition-transform hover:scale-110 ${contact?.isFavorite ? 'text-yellow-400' : 'text-slate-500 hover:text-yellow-400'}`}
             onClick={() => toggleFavorite(contact.id)}
             aria-label={contact?.isFavorite ? "Remove from favorites" : "Add to favorites"}
+            title="Toggle favorite"
           >
             {contact?.isFavorite ? "⭐" : "⚝"}
           </button>
@@ -21,12 +91,45 @@ export default function ContactCard({contact, toggleFavorite, handleNextContact,
         
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-slate-300">
+            {/* Badge de categoría (Reto Final 1) */}
+            <span 
+              className={`text-xs px-2 py-1 rounded-full ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border} border`}
+              data-category={contact.category || "none"}
+            >
+              {contact.category === "trabajo" ? "Work" : 
+               contact.category === "personal" ? "Personal" : 
+               contact.category === "familia" ? "Family" : "Sin categoría"}
+            </span>
+          </div>
+          <div className="flex items-center text-slate-300">
             <span className="mr-2">📱</span>
-            <span className="text-sm">{contact?.phone}</span>
+            <span className="text-sm">
+              {searchTerm ? (
+                <span dangerouslySetInnerHTML={{ 
+                  __html: contact?.phone.replace(
+                    new RegExp(searchTerm, 'gi'), 
+                    match => `<mark class="bg-pink-500/30 text-white px-1 rounded">${match}</mark>`
+                  ) 
+                }} />
+              ) : (
+                contact?.phone
+              )}
+            </span>
           </div>
           <div className="flex items-center text-slate-300">
             <span className="mr-2">✉️</span>
-            <span className="text-sm truncate">{contact?.email}</span>
+            <span className="text-sm truncate">
+              {searchTerm ? (
+                <span dangerouslySetInnerHTML={{ 
+                  __html: contact?.email.replace(
+                    new RegExp(searchTerm, 'gi'), 
+                    match => `<mark class="bg-pink-500/30 text-white px-1 rounded">${match}</mark>`
+                  ) 
+                }} />
+              ) : (
+                contact?.email
+              )}
+            </span>
           </div>
         </div>
         
