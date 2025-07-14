@@ -2,7 +2,7 @@
 
 Una aplicación moderna para gestionar contactos personales con múltiples funcionalidades avanzadas como categorización, búsqueda, ordenamiento, favoritos y persistencia local.
 
-![Gestor de Contactos]('./src/assets/ManagerContact-Xandev.png')
+![Gestor de Contactos](./src/assets/ManagerContact-Xandev.png)
 
 ## Stack Tecnológico
 
