@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export default function ContactCard({contact, toggleFavorite, handleNextContact, selectContact, searchTerm, onEdit}) {
   const isSelected = selectContact?.id === contact.id;
+  // Estado para el hover
   const [isHovered, setIsHovered] = useState(false);
   
   // Colores para las categorías (Reto Final 1)
