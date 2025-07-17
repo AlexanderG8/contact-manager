@@ -24,6 +24,12 @@ export default function ContactCard({contact, toggleFavorite, handleNextContact,
       text: "text-orange-400",
       border: "border-orange-500/30",
       color: "#ea580c"
+    },
+    social: {
+      bg: "bg-purple-500/20",
+      text: "text-purple-400",
+      border: "border-purple-500/30",
+      color: "#8b5cf6"
     }
   };
   
@@ -51,7 +57,7 @@ export default function ContactCard({contact, toggleFavorite, handleNextContact,
       <div className="p-5">
         <div className="flex justify-between items-start mb-3">
           <div className="flex items-center gap-2">
-            <h3 className="text-white font-medium text-lg truncate">
+            <h3 className="text-white font-medium text-sm truncate">
               {searchTerm ? (
                 <span dangerouslySetInnerHTML={{ 
                   __html: contact?.name.replace(
@@ -99,7 +105,8 @@ export default function ContactCard({contact, toggleFavorite, handleNextContact,
             >
               {contact.category === "trabajo" ? "Work" : 
                contact.category === "personal" ? "Personal" : 
-               contact.category === "familia" ? "Family" : "Sin categoría"}
+               contact.category === "familia" ? "Family" : 
+               contact.category === "social" ? "Social" : "Sin categoría"}
             </span>
           </div>
           <div className="flex items-center text-slate-300">

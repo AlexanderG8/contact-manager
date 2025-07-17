@@ -7,6 +7,9 @@ import Footer from "./components/Footer";
 import ContactSelected from "./components/ContactSelected";
 import Filters from "./components/Filters";
 import ContactForm from "./components/ContactForm";
+import InitializeApp from "./utils/Initializer";
+import SplashScreen from "./components/SplashScreen";
+import { fetchContacts } from "./services/contactService";
 
 // Función para guardar datos en localStorage con manejo de errores (Reto Final 2)
 const safeLocalStorage = {
@@ -41,6 +44,10 @@ function App() {
   const [sortOption, setSortOption] = useState("default"); // default, az, za, favorites, recent
   // Hook para manejar el filtro por categoría (Reto Final 1)
   const [categoryFilter, setCategoryFilter] = useState("all"); // all, trabajo, personal, familia
+  // Hook para manejar el inizialización de la aplicación
+  const [isInitializing, setIsInitializing] = useState(true);
+  // Estado para manejar la carga desde la API
+  const [isLoadingFromAPI, setIsLoadingFromAPI] = useState(false);
   
   // Hook para manejar la notificación temporal (Reto Autónomo 2)
   const [notification, setNotification] = useState({
@@ -96,6 +103,73 @@ function App() {
       },
     ];
   });
+  
+  // Cargar contactos desde la API al inicializar la aplicación
+  useEffect(() => {
+    const loadContactsFromAPI = async () => {
+      setIsLoadingFromAPI(true);
+      try {
+        console.log('🔄 Intentando cargar contactos desde la API...');
+        const apiContacts = await fetchContacts();
+        if (apiContacts && apiContacts.length > 0) {
+          // Transformar los contactos de la API al formato esperado
+          const transformedContacts = apiContacts.map((contact, index) => ({
+            id: contact.id || Date.now() + index,
+            name: contact.fullname,
+            phone: contact.phonenumber || 'Sin teléfono',
+            email: contact.email || 'Sin email',
+            category: contact.type || 'personal', // Asignar categoría por defecto
+            isFavorite: contact.isFavorite || false,
+            createdAt: contact.createdAt || new Date().toISOString(),
+            updatedAt: contact.updatedAt || new Date().toISOString()
+          }));
+          
+          setContacts(transformedContacts);
+          console.log(`✅ ${transformedContacts.length} contactos cargados desde la API`);
+          
+          // Mostrar notificación de éxito
+          setNotification({
+            show: true,
+            message: `🌐 ${transformedContacts.length} contactos cargados desde la API`
+          });
+          
+          setTimeout(() => {
+            setNotification({ show: false, message: "" });
+          }, 7000);
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar contactos desde la API:', error);
+        
+        // Intentar cargar desde localStorage como fallback
+        const savedContacts = safeLocalStorage.getItem('contacts', []);
+        if (savedContacts && savedContacts.length > 0) {
+          setContacts(savedContacts);
+          console.log('📱 Contactos cargados desde localStorage como fallback');
+          
+          setNotification({
+            show: true,
+            message: "📱 Contactos cargados desde almacenamiento local"
+          });
+        } else {
+          // Usar contactos predeterminados si no hay nada guardado
+          console.log('🏠 Usando contactos predeterminados');
+          setNotification({
+            show: true,
+            message: "🏠 Usando contactos de ejemplo"
+          });
+        }
+        
+        setTimeout(() => {
+          setNotification({ show: false, message: "" });
+        }, 3000);
+      } finally {
+        setIsLoadingFromAPI(false);
+        setIsInitializing(false);
+      }
+    };
+    
+    loadContactsFromAPI();
+  }, []);
   
   // Cargar configuraciones de usuario desde localStorage (Reto Final 2)
   useEffect(() => {
@@ -507,7 +581,17 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    async function startApp(){
+      const result = await InitializeApp(1000);
+      setIsInitializing(result);
+    }
+    startApp();
+  }, []);
+
   return (
+    <>
+    {(isInitializing || isLoadingFromAPI) ? <SplashScreen isLoading={isInitializing || isLoadingFromAPI}/> : (
     <div className="min-h-screen w-full bg-[#020617] relative">
       {/* Magenta Orb Grid Background */}
       <div
@@ -621,6 +705,8 @@ function App() {
         <Footer />
       </div>
     </div>
+    )}
+    </>
   );
 }
 

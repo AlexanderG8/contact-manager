@@ -11,6 +11,8 @@ Una aplicación moderna para gestionar contactos personales con múltiples funci
 - **Bundler/Dev Server**: Vite 7
 - **Lenguaje**: JavaScript (ES6+)
 - **Linting**: ESLint 9
+- **Fetch API**: Para realizar peticiones HTTP a la API externa
+- **Variables de Entorno**: Para configuración segura de URLs de API
 
 ## Instrucciones de Instalación
 
@@ -57,8 +59,22 @@ Una aplicación moderna para gestionar contactos personales con múltiples funci
 
 ### Respaldo de Datos
 
-- **Exportar**: Haz clic en "Export Data" para descargar un archivo JSON con todos tus contactos y configuraciones.
+- **Respaldo de Datos**: Haz clic en "Export Data" para descargar un archivo JSON con todos tus contactos y configuraciones.
 - **Importar**: Haz clic en "Import Data" para cargar un archivo JSON previamente exportado.
+
+### Integración con API Externa
+
+La aplicación está configurada para cargar contactos desde una API externa al inicializar:
+
+1. **Carga Automática**: Al abrir la aplicación, se intenta cargar contactos desde la API configurada en `VITE_API_URL`
+2. **Sistema de Fallback**: Si la API no está disponible, se cargan contactos desde localStorage
+3. **Contactos de Ejemplo**: Si no hay datos guardados, se muestran contactos predeterminados
+4. **Notificaciones**: El sistema muestra el origen de los datos cargados (API, localStorage, o ejemplos)
+
+**Configuración de la API:**
+- Edita el archivo `.env` en la raíz del proyecto
+- Modifica la variable `VITE_API_URL` con la URL de tu API
+- La API debe devolver un array de contactos en formato JSON
 
 ## Funcionalidades Implementadas
 
@@ -130,6 +146,14 @@ Una aplicación moderna para gestionar contactos personales con múltiples funci
 - **useState**: Para gestión de estado local en componentes.
 - **useEffect**: Para efectos secundarios como cargar/guardar datos en localStorage.
 - **useMemo**: Para optimizar el rendimiento en operaciones costosas como filtrado y ordenamiento.
+- **Carga de Datos**: Sistema de prioridades: API → localStorage → datos por defecto
+
+### Servicios y API
+
+- **Separación de Responsabilidades**: Servicios dedicados en `/src/services/` para lógica de API
+- **Manejo de Errores**: Try-catch comprehensivo con logging detallado
+- **Configuración**: Variables de entorno para URLs de API seguras
+- **Extensibilidad**: Funciones preparadas para CRUD completo (GET, POST, PUT, DELETE)
 
 ### Patrones de Diseño
 

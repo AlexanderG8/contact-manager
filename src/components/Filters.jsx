@@ -135,6 +135,7 @@ export default function Filters({
               <option value="trabajo">Work</option>
               <option value="personal">Personal</option>
               <option value="familia">Family</option>
+              <option value="social">Social</option>
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
               <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -160,6 +161,9 @@ export default function Filters({
               </span>
               <span className="bg-orange-500/20 text-orange-300 px-2 py-1 rounded-full text-xs" title="Family contacts">
                 F: {categoryCounts?.familia || 0}
+              </span>
+              <span className="bg-purple-500/20 text-orange-300 px-2 py-1 rounded-full text-xs" title="Family contacts">
+                S: {categoryCounts?.social || 0}
               </span>
             </div>
             
