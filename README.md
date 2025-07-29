@@ -48,6 +48,7 @@ Una aplicación moderna para gestionar contactos personales con múltiples funci
 
 - **Añadir Contacto**: Completa el formulario con nombre, teléfono, email y categoría, luego haz clic en "Save Contact".
 - **Editar Contacto**: Haz clic en el icono de edición (lápiz) en cualquier tarjeta de contacto para modificar sus datos.
+- **Eliminar Contacto**: Haz clic en el icono de papelera en cualquier tarjeta de contacto para eliminar el contacto (se mostrará una confirmación).
 - **Ver Detalles**: Haz clic en cualquier contacto para ver sus detalles completos en el panel lateral.
 - **Marcar Favorito**: Utiliza el icono de estrella para marcar/desmarcar contactos como favoritos.
 
@@ -65,12 +66,15 @@ Una aplicación moderna para gestionar contactos personales con múltiples funci
 
 ### Integración con API Externa
 
-La aplicación está configurada para cargar contactos desde una API externa al inicializar:
+La aplicación implementa el patrón Service Layer para comunicarse con una API externa:
 
-1. **Carga Automática**: Al abrir la aplicación, se intenta cargar contactos desde la API configurada en `VITE_API_URL`
-2. **Sistema de Fallback**: Si la API no está disponible, se cargan contactos desde localStorage
-3. **Contactos de Ejemplo**: Si no hay datos guardados, se muestran contactos predeterminados
-4. **Notificaciones**: El sistema muestra el origen de los datos cargados (API, localStorage, o ejemplos) mediante notificaciones modernas con Sonner
+1. **CRUD Completo**: Todas las operaciones (Crear, Leer, Actualizar, Eliminar) están integradas con la API
+2. **Capa de Servicio**: El archivo `contactService.js` encapsula toda la lógica de comunicación con la API
+3. **Carga Automática**: Al abrir la aplicación, se intenta cargar contactos desde la API configurada en `VITE_API_URL`
+4. **Sistema de Fallback**: Si la API no está disponible, se cargan contactos desde localStorage
+5. **Contactos de Ejemplo**: Si no hay datos guardados, se muestran contactos predeterminados
+6. **Notificaciones**: El sistema muestra notificaciones para cada operación CRUD (éxito, error, advertencia)
+7. **Manejo de Errores**: Sistema robusto de manejo de errores con reintentos automáticos
 
 **Configuración de la API:**
 - Edita el archivo `.env` en la raíz del proyecto
@@ -81,10 +85,12 @@ La aplicación está configurada para cargar contactos desde una API externa al 
 
 ### Funcionalidades Core
 
-- Añadir, editar, ver y buscar contactos
+- **CRUD Completo**: Crear, leer, actualizar y eliminar contactos con integración a API
+- **Patrón Service Layer**: Implementación del patrón de diseño Service Layer para separar la lógica de negocio
 - Interfaz de usuario intuitiva y responsive
 - Visualización de contactos en tarjetas con información relevante
 - Selección de contacto para ver detalles completos
+- Confirmación antes de eliminar contactos
 
 ### Retos Extra
 
@@ -139,6 +145,17 @@ La aplicación está configurada para cargar contactos desde una API externa al 
 
 ## Decisiones Técnicas y Patrones Aplicados
 
+### Patrón Service Layer
+
+Se ha implementado el patrón Service Layer para separar la lógica de negocio de la interfaz de usuario:
+
+- **Encapsulamiento**: Toda la lógica de comunicación con la API está encapsulada en `contactService.js`
+- **Operaciones CRUD**: Implementación completa de métodos para crear, leer, actualizar y eliminar contactos
+- **Transformación de Datos**: El servicio se encarga de transformar los datos entre el formato de la API y el formato interno
+- **Manejo de Errores**: Sistema robusto con reintentos automáticos y logging detallado
+- **Estadísticas**: El servicio mantiene estadísticas de uso (peticiones exitosas, fallidas, tiempos de respuesta)
+- **Singleton**: Se exporta una única instancia del servicio para mantener el estado
+
 ### Arquitectura de Componentes
 
 - **Componentes Funcionales**: Uso exclusivo de componentes funcionales con React Hooks para gestión de estado y efectos secundarios.
@@ -153,10 +170,12 @@ La aplicación está configurada para cargar contactos desde una API externa al 
 
 ### Servicios y API
 
-- **Separación de Responsabilidades**: Servicios dedicados en `/src/services/` para lógica de API
-- **Manejo de Errores**: Try-catch comprehensivo con logging detallado
+- **Patrón Service Layer**: Implementación completa del patrón Service Layer en `/src/services/contactService.js`
+- **Operaciones CRUD Completas**: Implementación de Create, Read, Update y Delete integradas con la API
+- **Manejo de Errores**: Try-catch comprehensivo con logging detallado y sistema de reintentos
 - **Configuración**: Variables de entorno para URLs de API seguras
-- **Extensibilidad**: Funciones preparadas para CRUD completo (GET, POST, PUT, DELETE)
+- **Fallback Automático**: Si la API falla, el sistema guarda los datos localmente
+- **Notificaciones Integradas**: Cada operación CRUD muestra notificaciones de éxito o error
 
 ### Patrones de Diseño
 

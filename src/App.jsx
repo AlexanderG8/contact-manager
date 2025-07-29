@@ -110,23 +110,11 @@ function App() {
         // Usar el método fetchContacts del servicio y extraer los contactos de la respuesta
         const { contacts: apiContacts } = await contactService.fetchContacts();
         if (apiContacts && apiContacts.length > 0) {
-          // Transformar los contactos de la API al formato esperado
-          const transformedContacts = apiContacts.map((contact, index) => ({
-            id: contact.id || Date.now() + index,
-            name: contact.fullname,
-            phone: contact.phonenumber || 'Sin teléfono',
-            email: contact.email || 'Sin email',
-            category: contact.type || 'personal', // Asignar categoría por defecto
-            isFavorite: contact.isFavorite || false,
-            createdAt: contact.createdAt || new Date().toISOString(),
-            updatedAt: contact.updatedAt || new Date().toISOString()
-          }));
-          
-          setContacts(transformedContacts);
-          console.log(`✅ ${transformedContacts.length} contactos cargados desde la API`);
+          setContacts(apiContacts);
+          console.log(`✅ ${apiContacts.length} contactos cargados desde la API`);
           
           // Mostrar notificación de éxito con Sonner
-          toast.success(`🌐 ${transformedContacts.length} contactos cargados desde la API`, {
+          toast.success(`🌐 ${apiContacts.length} contactos cargados desde la API`, {
             duration: 7000
           });
         }
@@ -365,47 +353,136 @@ function App() {
     setEditingContact(null);
     setFormMode('create');
   };
-
-  const handleAddContact = (contactData, mode = 'create') => {
-    if (mode === 'edit' && editingContact) {
-      // Modo edición: actualizar contacto existente
-      const updatedContacts = contacts.map(contact => {
-        if (contact.id === contactData.id) {
-          return {
-            ...contactData,
-            updatedAt: new Date().toISOString()
-          };
+  
+  /**
+   * Función para eliminar un contacto
+   * Implementa la integración con el Service Layer para eliminar contactos
+   * @param {Object} contact - Contacto a eliminar
+   */
+  const handleDeleteContact = async (contact) => {
+    // Mostrar confirmación antes de eliminar
+    if (!confirm(`¿Estás seguro de que deseas eliminar a ${contact.name}?`)) {
+      return;
+    }
+    
+    try {
+      // Llamar al método deleteContact del servicio
+      const success = await contactService.deleteContact(contact.id);
+      
+      if (success) {
+        // Actualizar el estado local
+        const updatedContacts = contacts.filter(c => c.id !== contact.id);
+        setContacts(updatedContacts);
+        
+        // Si el contacto eliminado era el seleccionado, deseleccionarlo
+        if (selectContact && selectContact.id === contact.id) {
+          setSelectContact(null);
         }
-        return contact;
+        
+        // Mostrar notificación de éxito
+        toast.success(`Contacto ${contact.name} eliminado correctamente`, {
+          duration: 3000
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error al eliminar contacto:', error);
+      
+      // Mostrar notificación de error
+      toast.error(`Error al eliminar contacto: ${error.message}`, {
+        duration: 5000
       });
-      
-      setContacts(updatedContacts);
-      setSelectContact({
-        ...contactData,
-        updatedAt: new Date().toISOString()
-      });
-      
-      // Mostrar notificación temporal con Sonner
-      toast.success(`✅ ${contactData.name} actualizado correctamente`);
-      
-      // Limpiar estado de edición
-      setEditingContact(null);
-      setFormMode('create');
-    } else {
-      // Modo creación: agregar nuevo contacto
-      const newContactWithId = {
-        ...contactData,
-        id: Date.now(), // Usar timestamp como ID único
-        isFavorite: false
-      };
-      
-      setContacts([...contacts, newContactWithId]);
-      
-      // Seleccionar automáticamente el nuevo contacto
-      setSelectContact(newContactWithId);
-      
-      // Mostrar notificación temporal con Sonner
-      toast.success(`✅ ${contactData.name} agregado a tus contactos`);
+    }
+  };
+
+  /**
+   * Función para agregar o actualizar un contacto
+   * Implementa la integración con el Service Layer para crear y actualizar contactos
+   * @param {Object} contactData - Datos del contacto a crear o actualizar
+   * @param {string} mode - Modo de operación ('create' o 'edit')
+   */
+  const handleAddContact = async (contactData, mode = 'create') => {
+    try {
+      if (mode === 'edit' && editingContact) {
+        // Modo edición: actualizar contacto existente
+        const contactToUpdate = {
+          ...contactData,
+          updatedAt: new Date().toISOString()
+        };
+        
+        // Llamar al método updateContact del servicio
+        const updatedContact = await contactService.updateContact(contactData.id, contactToUpdate);
+        
+        // Si la API devuelve el contacto actualizado, usarlo; de lo contrario, usar los datos locales
+        const contactToUse = updatedContact || contactToUpdate;
+        
+        // Actualizar el estado local
+        const updatedContacts = contacts.map(contact => {
+          if (contact.id === contactData.id) {
+            return contactToUse;
+          }
+          return contact;
+        });
+        
+        setContacts(updatedContacts);
+        setSelectContact(contactToUse);
+        
+        // Mostrar notificación de éxito
+        toast.success(`Contacto ${contactToUse.name} actualizado correctamente`, {
+          duration: 3000
+        });
+        
+        // Limpiar estado de edición
+        setEditingContact(null);
+        setFormMode('create');
+      } else {
+        // Modo creación: agregar nuevo contacto
+        const newContactData = {
+          ...contactData,
+          isFavorite: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        try {
+          // Llamar al método createContact del servicio
+          const createdContact = await contactService.createContact(newContactData);
+          
+          // Si la API devuelve el contacto creado, usarlo; de lo contrario, crear uno con ID local
+          const newContact = createdContact || {
+            ...newContactData,
+            id: Date.now() // Usar timestamp como ID único si la API no devuelve un ID
+          };
+          
+          setContacts([...contacts, newContact]);
+          
+          // Seleccionar automáticamente el nuevo contacto
+          setSelectContact(newContact);
+          
+          // Mostrar notificación temporal con Sonner
+          toast.success(`✅ ${newContact.name} agregado a tus contactos`, {
+            duration: 3000
+          });
+        } catch (error) {
+          console.error('Error al crear contacto en la API:', error);
+          
+          // Si falla la creación en la API, agregarlo localmente de todos modos
+          const localContact = {
+            ...newContactData,
+            id: Date.now()
+          };
+          
+          setContacts([...contacts, localContact]);
+          setSelectContact(localContact);
+          
+          // Mostrar notificación de advertencia
+          toast.warning(`Contacto guardado localmente. Error en API: ${error.message}`, {
+            duration: 5000
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`Error al ${mode === 'edit' ? 'actualizar' : 'crear'} contacto:`, error);
+      toast.error(`❌ Error: ${error.message}`);
     }
   };
   
@@ -432,7 +509,7 @@ function App() {
       return counts;
     }, {});
   }, [contacts]);
-  
+
   // Función para exportar datos (Reto Final 2 - opcional)
   const handleExportData = () => {
     try {
@@ -557,15 +634,16 @@ function App() {
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-white/90">Contacts</h2>
               <ContactList
-                contactsToShow={contactsToShow}
-                toggleFavorite={toggleFavorite}
-                handleSelectContact={handleSelectContact}
-                handleNextContact={handleNextContact}
-                selectContact={selectContact}
-                searchTerm={searchTerm}
-                onEditContact={handleEditContact}
-                setContacts={setContacts} // setContacts permitirá la actualización desde el componente
-              />
+            contactsToShow={contactsToShow}
+            toggleFavorite={toggleFavorite}
+            handleSelectContact={handleSelectContact}
+            handleNextContact={handleNextContact}
+            selectContact={selectContact}
+            searchTerm={searchTerm}
+            onEditContact={handleEditContact}
+            onDeleteContact={handleDeleteContact}
+            setContacts={setContacts}
+          />
             </div>
             
             <div className="space-y-6">
@@ -617,6 +695,7 @@ function App() {
                   handleNextContact={handleNextContact}
                   searchTerm={searchTerm}
                   onEditContact={handleEditContact}
+                  onDeleteContact={handleDeleteContact} // Añadimos la función para eliminar contactos
                 />
               </div>
             </div>

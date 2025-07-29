@@ -189,18 +189,42 @@ class ContactService {
     return 'Desde la carga de la página';
   }
   
+  async convertNewContactLocal(newContact){
+    const convertNewContact = {
+        id: newContact.id,
+        name: newContact.fullname,
+        // Formatear teléfono: si tiene 9 dígitos, formato XXX-XXX-XXX
+        phone: this._formatPhoneNumber(newContact.phonenumber) || 'Sin teléfono',
+        email: newContact.email || 'Sin email',
+        category: newContact.type || 'personal',
+        isFavorite: newContact.isFavorite || false,
+        createdAt: newContact.createdAt || new Date().toISOString(),
+        updatedAt: newContact.updatedAt || new Date().toISOString()
+      }
+    return convertNewContact;
+  }
+
   /**
    * Crea un nuevo contacto (ejemplo para futuras implementaciones)
    * @param {Object} contactData - Datos del nuevo contacto
    * @returns {Promise<Object>} Contacto creado
    */
   async createContact(contactData) {
+    const newDate = new Date().toISOString().split('T')[0];
+    const convertContact = {
+      "fullname":contactData.name,
+      "phonenumber":contactData.phone,
+      "email": contactData.email,
+      "type":contactData.category,
+      "company":"",
+      "birthday": newDate
+    }
     this.requestCount++;
     try {
       console.log('📝 Service Layer: Creando nuevo contacto...');
       const response = await this._fetchWithRetry(this.apiUrl, {
         method: 'POST',
-        body: JSON.stringify(contactData)
+        body: JSON.stringify(convertContact)
       });
       
       if (!response.ok) {
@@ -209,8 +233,9 @@ class ContactService {
       
       const newContact = await response.json();
       this.successCount++;
-      console.log('✅ Service Layer: Contacto creado:', newContact);
-      return newContact;
+      const convertNewContact = this.convertNewContactLocal(newContact);
+      console.log('✅ Service Layer: Contacto creado:', convertNewContact);
+      return convertNewContact;
       
     } catch (error) {
       console.error('❌ Service Layer: Error al crear contacto:', error);
@@ -226,12 +251,22 @@ class ContactService {
    * @returns {Promise<Object>} Contacto actualizado
    */
   async updateContact(contactId, contactData) {
+    const newDate = new Date().toISOString().split('T')[0];
+    const convertContact = {
+      "id": contactData.id,
+      "fullname":contactData.name,
+      "phonenumber":contactData.phone,
+      "email": contactData.email,
+      "type":contactData.category,
+      "company":"",
+      "birthday": newDate
+    }
     this.requestCount++;
     try {
       console.log(`📝 Service Layer: Actualizando contacto ${contactId}...`);
       const response = await this._fetchWithRetry(`${this.apiUrl}/${contactId}`, {
         method: 'PUT',
-        body: JSON.stringify(contactData)
+        body: JSON.stringify(convertContact)
       });
       
       if (!response.ok) {
@@ -240,8 +275,9 @@ class ContactService {
       
       const updatedContact = await response.json();
       this.successCount++;
-      console.log('✅ Service Layer: Contacto actualizado:', updatedContact);
-      return updatedContact;
+      const convertUpdateContact = this.convertNewContactLocal(updatedContact);
+      console.log('✅ Service Layer: Contacto actualizado:', convertUpdateContact);
+      return convertUpdateContact;
       
     } catch (error) {
       console.error('❌ Service Layer: Error al actualizar contacto:', error);

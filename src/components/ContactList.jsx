@@ -11,6 +11,7 @@ const ContactList = ({
   selectContact,
   searchTerm,
   onEditContact,
+  onDeleteContact, // Añadimos la función para eliminar contactos
   setContacts, // Añadimos setContacts para actualizar el estado en App.jsx
 }) => {
   // Estados para el fetch usando Service Layer
@@ -231,6 +232,7 @@ const ContactList = ({
                 selectContact={selectContact}
                 searchTerm={searchTerm}
                 onEdit={onEditContact}
+                onDelete={onDeleteContact} // Pasamos la función para eliminar contactos
               />
             </div>
           ))}
