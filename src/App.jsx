@@ -9,7 +9,8 @@ import Filters from "./components/Filters";
 import ContactForm from "./components/ContactForm";
 import InitializeApp from "./utils/Initializer";
 import SplashScreen from "./components/SplashScreen";
-import { fetchContacts } from "./services/contactService";
+import { contactService } from "./services/contactService";
+import { Toaster, toast } from "sonner";
 
 // Función para guardar datos en localStorage con manejo de errores (Reto Final 2)
 const safeLocalStorage = {
@@ -49,11 +50,7 @@ function App() {
   // Estado para manejar la carga desde la API
   const [isLoadingFromAPI, setIsLoadingFromAPI] = useState(false);
   
-  // Hook para manejar la notificación temporal (Reto Autónomo 2)
-  const [notification, setNotification] = useState({
-    show: false,
-    message: ""
-  });
+  // Las notificaciones ahora se manejan con Sonner
   
   // Estado para el modo de edición (Reto Final 3)
   const [editingContact, setEditingContact] = useState(null);
@@ -110,7 +107,8 @@ function App() {
       setIsLoadingFromAPI(true);
       try {
         console.log('🔄 Intentando cargar contactos desde la API...');
-        const apiContacts = await fetchContacts();
+        // Usar el método fetchContacts del servicio y extraer los contactos de la respuesta
+        const { contacts: apiContacts } = await contactService.fetchContacts();
         if (apiContacts && apiContacts.length > 0) {
           // Transformar los contactos de la API al formato esperado
           const transformedContacts = apiContacts.map((contact, index) => ({
@@ -127,15 +125,10 @@ function App() {
           setContacts(transformedContacts);
           console.log(`✅ ${transformedContacts.length} contactos cargados desde la API`);
           
-          // Mostrar notificación de éxito
-          setNotification({
-            show: true,
-            message: `🌐 ${transformedContacts.length} contactos cargados desde la API`
+          // Mostrar notificación de éxito con Sonner
+          toast.success(`🌐 ${transformedContacts.length} contactos cargados desde la API`, {
+            duration: 7000
           });
-          
-          setTimeout(() => {
-            setNotification({ show: false, message: "" });
-          }, 7000);
         }
       } catch (error) {
         console.error('❌ Error al cargar contactos desde la API:', error);
@@ -146,22 +139,16 @@ function App() {
           setContacts(savedContacts);
           console.log('📱 Contactos cargados desde localStorage como fallback');
           
-          setNotification({
-            show: true,
-            message: "📱 Contactos cargados desde almacenamiento local"
+          toast.info("📱 Contactos cargados desde almacenamiento local", {
+            duration: 3000
           });
         } else {
           // Usar contactos predeterminados si no hay nada guardado
           console.log('🏠 Usando contactos predeterminados');
-          setNotification({
-            show: true,
-            message: "🏠 Usando contactos de ejemplo"
+          toast.info("🏠 Usando contactos de ejemplo", {
+            duration: 3000
           });
         }
-        
-        setTimeout(() => {
-          setNotification({ show: false, message: "" });
-        }, 3000);
       } finally {
         setIsLoadingFromAPI(false);
         setIsInitializing(false);
@@ -186,18 +173,10 @@ function App() {
     const saveSuccess = safeLocalStorage.setItem('contacts', contacts);
     
     if (saveSuccess) {
-      // Mostrar notificación de guardado exitoso (opcional)
-      setNotification({
-        show: true,
-        message: "✅ Cambios guardados automáticamente"
+      // Mostrar notificación de guardado exitoso con Sonner (opcional)
+      toast.success("✅ Contactos obtenidos", {
+        duration: 1500
       });
-      
-      setTimeout(() => {
-        setNotification({
-          show: false,
-          message: ""
-        });
-      }, 1500);
     }
   }, [contacts]);
   
@@ -406,11 +385,8 @@ function App() {
         updatedAt: new Date().toISOString()
       });
       
-      // Mostrar notificación temporal
-      setNotification({
-        show: true,
-        message: `✅ ${contactData.name} actualizado correctamente`
-      });
+      // Mostrar notificación temporal con Sonner
+      toast.success(`✅ ${contactData.name} actualizado correctamente`);
       
       // Limpiar estado de edición
       setEditingContact(null);
@@ -428,20 +404,9 @@ function App() {
       // Seleccionar automáticamente el nuevo contacto
       setSelectContact(newContactWithId);
       
-      // Mostrar notificación temporal
-      setNotification({
-        show: true,
-        message: `✅ ${contactData.name} agregado a tus contactos`
-      });
+      // Mostrar notificación temporal con Sonner
+      toast.success(`✅ ${contactData.name} agregado a tus contactos`);
     }
-    
-    // Ocultar la notificación después de 3 segundos
-    setTimeout(() => {
-      setNotification({
-        show: false,
-        message: ""
-      });
-    }, 3000);
   };
   
   // Función para manejar el cambio en la búsqueda (Reto Extra 1)
@@ -491,30 +456,10 @@ function App() {
       linkElement.setAttribute('download', exportFileDefaultName);
       linkElement.click();
       
-      setNotification({
-        show: true,
-        message: "✅ Datos exportados correctamente"
-      });
-      
-      setTimeout(() => {
-        setNotification({
-          show: false,
-          message: ""
-        });
-      }, 3000);
+      toast.success("✅ Datos exportados correctamente");
     } catch (error) {
       console.error("Error exporting data:", error);
-      setNotification({
-        show: true,
-        message: "❌ Error al exportar datos"
-      });
-      
-      setTimeout(() => {
-        setNotification({
-          show: false,
-          message: ""
-        });
-      }, 3000);
+      toast.error("❌ Error al exportar datos");
     }
   };
   
@@ -538,46 +483,23 @@ function App() {
               setShowOnlyFavorites(importedData.settings.showOnlyFavorites || false);
             }
             
-            setNotification({
-              show: true,
-              message: `✅ ${importedData.contacts.length} contactos importados`
-            });
+            toast.success(`✅ ${importedData.contacts.length} contactos importados`);
           } else {
             throw new Error("Invalid data format");
           }
         } catch (parseError) {
           console.error("Error parsing imported data:", parseError);
-          setNotification({
-            show: true,
-            message: "❌ Formato de archivo inválido"
-          });
+          toast.error("❌ Formato de archivo inválido");
         }
         
         // Limpiar el input file
         event.target.value = null;
-        
-        setTimeout(() => {
-          setNotification({
-            show: false,
-            message: ""
-          });
-        }, 3000);
       };
       
       reader.readAsText(file);
     } catch (error) {
       console.error("Error importing data:", error);
-      setNotification({
-        show: true,
-        message: "❌ Error al importar datos"
-      });
-      
-      setTimeout(() => {
-        setNotification({
-          show: false,
-          message: ""
-        });
-      }, 3000);
+      toast.error("❌ Error al importar datos");
     }
   };
 
@@ -607,13 +529,10 @@ function App() {
         }}
       />
       
-      {/* Notificación temporal (Reto Autónomo 2) */}
-      {notification.show && (
-        <div className="fixed top-4 right-4 z-50 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out flex items-center">
-          <span className="mr-2">✅</span>
-          {notification.message}
-        </div>
-      )}
+      {/* Las notificaciones ahora se manejan con Sonner */}
+      
+      {/* Componente Toaster de Sonner */}
+      <Toaster position="top-right" richColors />
       
       <div className="relative z-10 flex flex-col min-h-screen">
         <Header />
@@ -645,6 +564,7 @@ function App() {
                 selectContact={selectContact}
                 searchTerm={searchTerm}
                 onEditContact={handleEditContact}
+                setContacts={setContacts} // setContacts permitirá la actualización desde el componente
               />
             </div>
             
