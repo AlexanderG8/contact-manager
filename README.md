@@ -13,6 +13,7 @@ Una aplicación moderna para gestionar contactos personales con múltiples funci
 - **Linting**: ESLint 9
 - **Fetch API**: Para realizar peticiones HTTP a la API externa
 - **Variables de Entorno**: Para configuración segura de URLs de API
+- **Notificaciones**: Sonner para notificaciones modernas y personalizables
 
 ## Instrucciones de Instalación
 
@@ -69,7 +70,7 @@ La aplicación está configurada para cargar contactos desde una API externa al 
 1. **Carga Automática**: Al abrir la aplicación, se intenta cargar contactos desde la API configurada en `VITE_API_URL`
 2. **Sistema de Fallback**: Si la API no está disponible, se cargan contactos desde localStorage
 3. **Contactos de Ejemplo**: Si no hay datos guardados, se muestran contactos predeterminados
-4. **Notificaciones**: El sistema muestra el origen de los datos cargados (API, localStorage, o ejemplos)
+4. **Notificaciones**: El sistema muestra el origen de los datos cargados (API, localStorage, o ejemplos) mediante notificaciones modernas con Sonner
 
 **Configuración de la API:**
 - Edita el archivo `.env` en la raíz del proyecto
@@ -106,9 +107,11 @@ La aplicación está configurada para cargar contactos desde una API externa al 
    - Contador visual de campos completados
    - Barra de progreso que se actualiza en tiempo real
 
-2. **Selección Automática y Notificación Temporal**
+2. **Selección Automática y Sistema de Notificaciones**
    - Selección automática del contacto recién añadido
-   - Notificación temporal con animación fade-in/fade-out
+   - Sistema de notificaciones moderno con Sonner
+   - Diferentes tipos de notificaciones según el contexto (éxito, error, información)
+   - Personalización de duración y estilo de las notificaciones
 
 3. **Prevención de Contactos Duplicados**
    - Validación para evitar nombres duplicados
@@ -172,10 +175,18 @@ La aplicación está configurada para cargar contactos desde una API externa al 
 
 - **Try-Catch**: Implementación de bloques try-catch para operaciones propensas a errores.
 - **Validación Defensiva**: Comprobación de existencia de datos antes de acceder a propiedades.
-- **Feedback Visual**: Notificaciones para informar al usuario sobre errores o acciones exitosas.
+- **Feedback Visual**: Sistema de notificaciones con Sonner para informar al usuario sobre errores o acciones exitosas, con diferentes tipos de notificaciones (success, error, info) y personalización de duración.
 
 ### Estilizado
 
 - **Utility-First CSS**: Uso de Tailwind CSS para un desarrollo rápido y consistente.
 - **Responsive Design**: Diseño adaptable a diferentes tamaños de pantalla.
 - **Dark Mode**: Interfaz con tema oscuro para mejor experiencia visual.
+
+### Sistema de Notificaciones
+
+- **Librería Sonner**: Implementación de Sonner para un sistema de notificaciones moderno y elegante.
+- **Tipos de Notificaciones**: Soporte para diferentes tipos de notificaciones (success, error, info) con estilos visuales distintos.
+- **Personalización**: Configuración de duración, posición y estilo de las notificaciones.
+- **Experiencia de Usuario**: Animaciones suaves y diseño moderno para mejorar la experiencia del usuario.
+- **Código Limpio**: Eliminación de lógica repetitiva para mostrar/ocultar notificaciones, resultando en un código más mantenible.
