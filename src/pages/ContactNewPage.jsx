@@ -4,10 +4,12 @@ import { contactService } from '../services/contactService';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Toaster, toast } from 'sonner';
+import { useContactHistory, CONTACT_ACTIONS } from '../hooks/useContactHistory';
 
 export default function ContactNewPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { addAction } = useContactHistory();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -38,45 +40,75 @@ export default function ContactNewPage() {
     };
   }, [hasUnsavedChanges]);
 
-  // Validación del formulario
+  // Validación en tiempo real para cada campo
+  const validateField = (field, value) => {
+    switch (field) {
+      case 'name':
+        if (!value.trim()) {
+          return 'The name is required';
+        }
+        // Solo permitir letras, espacios y acentos
+        const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        if (!nameRegex.test(value)) {
+          return 'Name can only contain letters and spaces';
+        }
+        return '';
+      
+      case 'phone':
+        if (!value.trim()) {
+          return 'The phone is required';
+        }
+        // Solo permitir números, espacios, paréntesis y guiones
+        const phoneRegex = /^[0-9\s()\-]+$/;
+        if (!phoneRegex.test(value)) {
+          return 'Phone can only contain numbers, spaces, parentheses and hyphens';
+        }
+        return '';
+      
+      case 'email':
+        if (!value.trim()) {
+          return 'The email is required';
+        }
+        // Validación de email más robusta
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          return 'Please enter a valid email address';
+        }
+        return '';
+      
+      case 'category':
+        if (!value) {
+          return 'The category is required';
+        }
+        return '';
+      
+      default:
+        return '';
+    }
+  };
+
+  // Validación del formulario completo
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'The name is required';
-    }
-    
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'The phone is required';
-    } else {
-      const phoneRegex = /^[0-9\s\(\)\-]+$/;
-      if (!phoneRegex.test(formData.phone)) {
-        newErrors.phone = 'Invalid format. Example: (51) 998-123-567';
+    Object.keys(formData).forEach(field => {
+      const error = validateField(field, formData[field]);
+      if (error) {
+        newErrors[field] = error;
       }
-    }
-    
-    if (!formData.email.trim()) {
-      newErrors.email = 'The email is required';
-    } else if (!formData.email.includes('@')) {
-      newErrors.email = 'The email must contain an @';
-    }
-    
-    if (!formData.category) {
-      newErrors.category = 'The category is required';
-    }
+    });
     
     return newErrors;
   };
 
-  // Manejar cambios en el formulario
+  // Manejar cambios en el formulario con validación en tiempo real
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
     
-    // Limpiar error del campo si existe
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
+    // Validación en tiempo real
+    const fieldError = validateField(field, value);
+    setErrors(prev => ({ ...prev, [field]: fieldError }));
   };
 
   // Manejar envío del formulario
@@ -99,6 +131,9 @@ export default function ContactNewPage() {
       };
 
       const newContact = await contactService.createContact(newContactData);
+      
+      // Registrar la acción en el historial
+      addAction(CONTACT_ACTIONS.CREATE, newContact.name, newContact.id, 'Contact created successfully');
       
       toast.success('The contact was created successfully');
       setHasUnsavedChanges(false);
@@ -259,6 +294,27 @@ export default function ContactNewPage() {
                 </div>
               )}
               
+              {/* Indicador de estado del formulario */}
+              {Object.keys(formData).every(key => formData[key] !== '') && (
+                <div className="mb-4">
+                  {Object.values(errors).every(error => error === '') ? (
+                    <div className="bg-green-500/20 text-green-300 px-3 py-2 rounded-lg text-sm flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      ✓ All fields are valid - Ready to create contact
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-500/20 text-yellow-300 px-3 py-2 rounded-lg text-sm flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      Please fix the validation errors above
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div className="space-y-4">
                 {/* Campo Nombre */}
                 <div className="form-group">
@@ -268,11 +324,20 @@ export default function ContactNewPage() {
                     id="name"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder="Enter name"
+                    placeholder="Enter name (only letters and spaces)"
                     required
-                    className="w-full bg-slate-900/50 text-white border border-slate-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    className={`w-full bg-slate-900/50 text-white border rounded-lg py-2 px-4 focus:outline-none focus:ring-2 transition-all ${
+                      errors.name 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : formData.name && !errors.name 
+                        ? 'border-green-500 focus:ring-green-500' 
+                        : 'border-slate-700 focus:ring-green-500'
+                    } focus:border-transparent`}
                   />
                   {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
+                  {formData.name && !errors.name && (
+                    <p className="mt-1 text-sm text-green-400">✓ Valid name</p>
+                  )}
                 </div>
                 
                 {/* Campo Teléfono */}
@@ -283,11 +348,20 @@ export default function ContactNewPage() {
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    placeholder="Example: (51) 998-123-567"
+                    placeholder="Example: (51) 998-123-567 (only numbers)"
                     required
-                    className="w-full bg-slate-900/50 text-white border border-slate-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    className={`w-full bg-slate-900/50 text-white border rounded-lg py-2 px-4 focus:outline-none focus:ring-2 transition-all ${
+                      errors.phone 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : formData.phone && !errors.phone 
+                        ? 'border-green-500 focus:ring-green-500' 
+                        : 'border-slate-700 focus:ring-green-500'
+                    } focus:border-transparent`}
                   />
                   {errors.phone && <p className="mt-1 text-sm text-red-400">{errors.phone}</p>}
+                  {formData.phone && !errors.phone && (
+                    <p className="mt-1 text-sm text-green-400">✓ Valid phone number</p>
+                  )}
                 </div>
                 
                 {/* Campo Email */}
@@ -300,9 +374,18 @@ export default function ContactNewPage() {
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="Example: example@correo.com"
                     required
-                    className="w-full bg-slate-900/50 text-white border border-slate-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    className={`w-full bg-slate-900/50 text-white border rounded-lg py-2 px-4 focus:outline-none focus:ring-2 transition-all ${
+                      errors.email 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : formData.email && !errors.email 
+                        ? 'border-green-500 focus:ring-green-500' 
+                        : 'border-slate-700 focus:ring-green-500'
+                    } focus:border-transparent`}
                   />
                   {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
+                  {formData.email && !errors.email && (
+                    <p className="mt-1 text-sm text-green-400">✓ Valid email address</p>
+                  )}
                 </div>
                 
                 {/* Campo Categoría */}
@@ -313,7 +396,13 @@ export default function ContactNewPage() {
                     value={formData.category}
                     onChange={(e) => handleInputChange('category', e.target.value)}
                     required
-                    className="w-full bg-slate-900/50 text-white border border-slate-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    className={`w-full bg-slate-900/50 text-white border rounded-lg py-2 px-4 focus:outline-none focus:ring-2 transition-all ${
+                      errors.category 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : formData.category && !errors.category 
+                        ? 'border-green-500 focus:ring-green-500' 
+                        : 'border-slate-700 focus:ring-green-500'
+                    } focus:border-transparent`}
                   >
                     <option value="">Select a category</option>
                     <option value="trabajo">Work</option>
@@ -321,6 +410,9 @@ export default function ContactNewPage() {
                     <option value="familia">Family</option>
                   </select>
                   {errors.category && <p className="mt-1 text-sm text-red-400">{errors.category}</p>}
+                  {formData.category && !errors.category && (
+                    <p className="mt-1 text-sm text-green-400">✓ Category selected</p>
+                  )}
                 </div>
               </div>
               
@@ -328,8 +420,8 @@ export default function ContactNewPage() {
               <div className="flex gap-3 mt-6">
                 <button 
                   type="submit" 
-                  disabled={isSubmitting}
-                  className="flex-1 py-2 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-green-400 disabled:to-green-500 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
+                  disabled={isSubmitting || Object.values(errors).some(error => error !== '')}
+                  className="flex-1 py-2 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
