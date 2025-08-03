@@ -167,6 +167,46 @@ class ContactService {
   }
   
   /**
+   * Obtener contacto individual por ID
+   * @param {number|string} id - ID del contacto a obtener
+   * @returns {Promise<Object>} Contacto individual transformado
+   */
+  async fetchContactById(id) {
+    try {
+      console.log(`🌐 Cargando contacto ID: ${id}...`);
+      const response = await fetch(`${this.apiUrl}/${id}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Contacto no encontrado');
+        }
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      
+      const rawContact = await response.json();
+      
+      // Transformar el contacto al formato esperado por la aplicación
+      const transformedContact = {
+        id: rawContact.id || Date.now(),
+        name: rawContact.fullname,
+        phone: this._formatPhoneNumber(rawContact.phonenumber) || 'Sin teléfono',
+        email: rawContact.email || 'Sin email',
+        category: rawContact.type || 'personal',
+        isFavorite: rawContact.isFavorite || false,
+        createdAt: rawContact.createdAt || new Date().toISOString(),
+        updatedAt: rawContact.updatedAt || new Date().toISOString()
+      };
+      
+      console.log('✅ Contacto cargado y transformado:', transformedContact);
+      return transformedContact;
+      
+    } catch (error) {
+      console.error('❌ Error al cargar contacto:', error);
+      throw error;
+    }
+  }
+  
+  /**
    * Obtiene estadísticas del servicio
    * @returns {Object} Estadísticas de uso del servicio
    */

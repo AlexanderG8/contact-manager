@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 
 export default function ContactForm ({handleAddContact, contacts, editingContact, formMode, setFormMode, onCancelEdit}) {
+    const navigate = useNavigate();
+    
     const [formData, setFormData] = useState({
         name: "",
         phone: "",
@@ -53,6 +56,26 @@ export default function ContactForm ({handleAddContact, contacts, editingContact
             setHasUnsavedChanges(false);
         }
     }, [editingContact, formMode]);
+    
+    // 🏆 Reto Autónomo 3B: Confirmación de Navegación
+    // Prevenir salir con cambios sin guardar
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '¿Estás seguro de que deseas salir? Se perderán los cambios no guardados.';
+                return e.returnValue;
+            }
+        };
+        
+        // Agregar el event listener
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        
+        // Cleanup: remover el event listener
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [hasUnsavedChanges]);
     
     function validateForm(){
         const newErrors = {};
@@ -149,7 +172,7 @@ export default function ContactForm ({handleAddContact, contacts, editingContact
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const formErrors = validateForm();
     if(Object.keys(formErrors).length > 0){
@@ -168,20 +191,37 @@ export default function ContactForm ({handleAddContact, contacts, editingContact
       updatedAt: new Date().toISOString()
     }
     
-    // Llamo al callback onAddContact y le paso el contacto
-    if (formMode === 'edit' && editingContact) {
-      // En modo edición, incluir el ID existente
-      handleAddContact && handleAddContact({...contactData, id: editingContact.id}, 'edit');
-      setHasUnsavedChanges(false);
-      // Volver al modo creación después de guardar
-      setFormMode && setFormMode('create');
-    } else {
-      // En modo creación
-      handleAddContact && handleAddContact(contactData, 'create');
+    try {
+      // Llamo al callback onAddContact y le paso el contacto
+      if (formMode === 'edit' && editingContact) {
+        // En modo edición, incluir el ID existente
+        await handleAddContact({...contactData, id: editingContact.id}, 'edit');
+        setHasUnsavedChanges(false);
+        // Volver al modo creación después de guardar
+        setFormMode && setFormMode('create');
+        
+        // NAVEGACIÓN PROGRAMÁTICA tras edición exitosa
+        navigate(`/contact/${editingContact.id}`, {
+          state: { message: '¡Contacto actualizado exitosamente!' }
+        });
+      } else {
+        // En modo creación
+        const newContact = await handleAddContact(contactData, 'create');
+        
+        // NAVEGACIÓN PROGRAMÁTICA tras creación exitosa
+        if (newContact && newContact.id) {
+          navigate(`/contact/${newContact.id}`, {
+            state: { message: '¡Contacto creado exitosamente!' }
+          });
+        }
+      }
+      
+      // Limpiar el formulario
+      setFormData({name: "", phone: "", email: "", category: ""});
+      
+    } catch (error) {
+      setErrors({ general: error.message || 'Error al procesar el contacto' });
     }
-    
-    // Limpiar el formulario
-    setFormData({name: "", phone: "", email: "", category: ""});
   };
   
   // Función para cancelar la edición (Reto Final 3)
@@ -320,13 +360,26 @@ export default function ContactForm ({handleAddContact, contacts, editingContact
               </button>
               
               <button 
-                type="button"
+                type="button" 
                 onClick={handleCancelEdit}
-                className="py-2 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-medium rounded-lg transition-all shadow-lg flex items-center justify-center"
+                className="py-2 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-medium rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
+                Cancel
+              </button>
+              
+              {/* Botón de navegación hacia atrás en historial */}
+              <button 
+                type="button" 
+                onClick={() => navigate(-1)}
+                className="py-2 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                </svg>
+                Atrás
               </button>
             </>
           ) : (
@@ -366,6 +419,18 @@ export default function ContactForm ({handleAddContact, contacts, editingContact
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
+              </button>
+              
+              {/* Botón de navegación - Volver a Contactos */}
+              <button 
+                type="button" 
+                onClick={() => navigate('/contacts')}
+                className="py-2 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Volver
               </button>
             </>
           )}

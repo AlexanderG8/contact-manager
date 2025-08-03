@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function ContactCard({contact, toggleFavorite, handleNextContact, selectContact, searchTerm, onEdit, onDelete}) {
+export default function ContactCard({contact, toggleFavorite, handleNextContact, selectContact, searchTerm, onDelete, onEdit}) {
   const isSelected = selectContact?.id === contact.id;
   // Estado para el hover
   const [isHovered, setIsHovered] = useState(false);
@@ -71,18 +71,19 @@ export default function ContactCard({contact, toggleFavorite, handleNextContact,
             
             
           </div>
-          {/* Botón de editar (Reto Final 3) */}
+          {/* Botones de acción */}
           <div className="flex">
+            {/* Botón de editar */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit && onEdit(contact);
               }}
-              className={`ml-2 p-1.5 rounded-full transition-all ${isHovered ? "bg-slate-700/50" : ""}`}
+              className={`p-1.5 rounded-full transition-all ${isHovered ? "bg-slate-700/50" : ""}`}
               title="Edit contact"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400 hover:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
             </button>
             

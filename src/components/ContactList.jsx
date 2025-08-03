@@ -10,7 +10,6 @@ const ContactList = ({
   handleNextContact,
   selectContact,
   searchTerm,
-  onEditContact,
   onDeleteContact, // Añadimos la función para eliminar contactos
   setContacts, // Añadimos setContacts para actualizar el estado en App.jsx
 }) => {
@@ -121,7 +120,7 @@ const ContactList = ({
             disabled={isLoading}
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span>📡 Cargar Contactos</span>
+            <span>📡 Load Contacts</span>
             {isLoading && (
               <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -134,7 +133,7 @@ const ContactList = ({
           <div className="relative">
             <input 
               type="text" 
-              placeholder="Buscar por nombre..." 
+              placeholder="search by name..." 
               className="bg-slate-800 text-white border border-slate-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               onKeyDown={(e) => e.key === 'Enter' && searchContactsByName(e.target.value)}
             />
@@ -151,7 +150,7 @@ const ContactList = ({
             onClick={toggleServiceStats}
             className={`${showStats ? 'bg-purple-700' : 'bg-purple-600 hover:bg-purple-700'} text-white font-medium py-2 px-4 rounded-lg transition-colors`}
           >
-            📊 {showStats ? 'Ocultar Stats' : 'Ver Stats'}
+            📊 {showStats ? 'Hide Stats' : 'Show Stats'}
           </button>
         </div>
       </div>
@@ -160,7 +159,7 @@ const ContactList = ({
       {showStats && serviceStats && (
         <div className="bg-purple-900/30 backdrop-blur-sm rounded-xl border border-purple-700/50 p-4 mb-4 text-white">
           <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-            <span className="text-purple-300">📊</span> Estadísticas del Service Layer
+            <span className="text-purple-300">📊</span> Service Layer Stats
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-purple-800/50 p-3 rounded-lg">
@@ -168,15 +167,15 @@ const ContactList = ({
               <div className="text-2xl font-bold">{serviceStats.totalRequests}</div>
             </div>
             <div className="bg-green-800/50 p-3 rounded-lg">
-              <div className="text-sm text-green-300">Exitosos</div>
+              <div className="text-sm text-green-300">Successful</div>
               <div className="text-2xl font-bold">{serviceStats.successfulRequests}</div>
             </div>
             <div className="bg-red-800/50 p-3 rounded-lg">
-              <div className="text-sm text-red-300">Fallidos</div>
+              <div className="text-sm text-red-300">Failed</div>
               <div className="text-2xl font-bold">{serviceStats.failedRequests}</div>
             </div>
             <div className="bg-blue-800/50 p-3 rounded-lg">
-              <div className="text-sm text-blue-300">Última Petición</div>
+              <div className="text-sm text-blue-300">Last Request</div>
               <div className="text-lg font-bold">{serviceStats.lastRequestTime}</div>
             </div>
           </div>
@@ -187,8 +186,8 @@ const ContactList = ({
       {isLoading && (
         <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-700/50 p-8 text-center animate-pulse">
           <div className="text-slate-400 mb-3 text-5xl">🔄</div>
-          <h3 className="text-white text-lg font-medium mb-2">Cargando contactos desde API...</h3>
-          <p className="text-slate-400 text-sm">Por favor espera mientras obtenemos tus contactos</p>
+          <h3 className="text-white text-lg font-medium mb-2">Loading contacts from API...</h3>
+          <p className="text-slate-400 text-sm">Please wait while we get your contacts</p>
         </div>
       )}
       
@@ -196,13 +195,13 @@ const ContactList = ({
       {error && !isLoading && (
         <div className="bg-red-900/30 backdrop-blur-sm rounded-xl border border-red-700/50 p-8 text-center">
           <div className="text-red-400 mb-3 text-5xl">⚠️</div>
-          <h3 className="text-white text-lg font-medium mb-2">Error al cargar contactos</h3>
+          <h3 className="text-white text-lg font-medium mb-2">Error loading contacts</h3>
           <p className="text-red-300 text-sm mb-4">{error}</p>
           <button 
             onClick={fetchContactsDirectly}
             className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
-            Reintentar
+            Try again
           </button>
         </div>
       )}
@@ -211,8 +210,8 @@ const ContactList = ({
       {contactsToShow.length === 0 && !isLoading && !error && (
         <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-700/50 p-8 text-center">
           <div className="text-slate-400 mb-3 text-5xl">📋</div>
-          <h3 className="text-white text-lg font-medium mb-2">No hay contactos cargados</h3>
-          <p className="text-slate-400 text-sm mb-4">Haz clic en Cargar Contactos para obtener datos desde la API</p>
+          <h3 className="text-white text-lg font-medium mb-2">  No contacts loaded</h3>
+          <p className="text-slate-400 text-sm mb-4">Click on Load Contacts to get data from the API</p>
         </div>
       )}
       
@@ -231,7 +230,6 @@ const ContactList = ({
                 handleNextContact={handleNextContact}
                 selectContact={selectContact}
                 searchTerm={searchTerm}
-                onEdit={onEditContact}
                 onDelete={onDeleteContact} // Pasamos la función para eliminar contactos
               />
             </div>

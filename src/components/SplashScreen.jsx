@@ -11,7 +11,7 @@ const SplashScreen = ({ isLoading }) => {
       
       {/* Mensaje de carga */}
       <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-        📇 Iniciando Contact Manager...
+        📇 Loading Contact Manager...
       </h2>
       
       {/* CSS para animación del spinner */}

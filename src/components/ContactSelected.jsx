@@ -1,6 +1,6 @@
 import ContactCard from "./ContactCard";
 
-export default function ContactSelected({selectContact, toggleFavorite, handleNextContact, searchTerm, onEditContact, onDeleteContact}){
+export default function ContactSelected({selectContact, toggleFavorite, handleNextContact, searchTerm, onDeleteContact, onEditContact}){
     return(
         <section className="w-full">
             {selectContact ? (
@@ -10,8 +10,8 @@ export default function ContactSelected({selectContact, toggleFavorite, handleNe
                     handleNextContact={handleNextContact} 
                     selectContact={selectContact}
                     searchTerm={searchTerm}
-                    onEdit={onEditContact}
                     onDelete={onDeleteContact} // Pasamos la función para eliminar contactos
+                    onEdit={onEditContact} // Pasamos la función para editar contactos
                 />
             ) : (
                 <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-700/50 p-8 text-center">
