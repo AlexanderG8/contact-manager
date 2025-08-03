@@ -2,7 +2,7 @@
 
 > **Una aplicación web completa para gestión de contactos desarrollada con React 19, Tailwind CSS y arquitectura moderna. Implementa patrones de diseño avanzados, integración con APIs externas y persistencia de datos local.**
 
-![Home Page](./src/assets/HomePage.png)
+![Home Page](./src/assets/homepage.png)
 ![Contacts Page](./src/assets/ContactsPage.png)
 ![Add Contact](./src/assets/NewContactPage.png)
 ![Edit Contact](./src/assets/EditContactPage.png)
