@@ -4,11 +4,13 @@ import { contactService } from '../services/contactService';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Toaster, toast } from 'sonner';
+import { useContactHistory, CONTACT_ACTIONS } from '../hooks/useContactHistory';
 
 export default function ContactDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { addAction } = useContactHistory();
   const [contact, setContact] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -116,6 +118,9 @@ export default function ContactDetailPage() {
       const success = await contactService.deleteContact(contact.id);
       
       if (success) {
+        // Registrar la acción en el historial
+        addAction(CONTACT_ACTIONS.DELETE, contact.name, contact.id, 'Contact deleted successfully');
+        
         toast.success(`Contacto ${contact.name} eliminado correctamente`);
         navigate('/contacts');
       }

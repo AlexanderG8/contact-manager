@@ -10,6 +10,7 @@ import InitializeApp from "../utils/Initializer";
 import SplashScreen from "../components/SplashScreen";
 import { contactService } from "../services/contactService";
 import { Toaster, toast } from "sonner";
+import { useContactHistory, CONTACT_ACTIONS } from '../hooks/useContactHistory';
 
 // Función para guardar datos en localStorage con manejo de errores (Reto Final 2)
 const safeLocalStorage = {
@@ -35,6 +36,7 @@ const safeLocalStorage = {
 
 export default function ContactsPage() {
   const navigate = useNavigate();
+  const { addAction } = useContactHistory();
   
   // Hook para manejar el estado del contacto seleccionado
   const [selectContact, setSelectContact] = useState(null);
@@ -363,6 +365,9 @@ export default function ContactsPage() {
       const success = await contactService.deleteContact(contact.id);
       
       if (success) {
+        // Registrar la acción en el historial
+        addAction(CONTACT_ACTIONS.DELETE, contact.name, contact.id, 'Contact deleted successfully');
+        
         // Actualizar el estado local
         const updatedContacts = contacts.filter(c => c.id !== contact.id);
         setContacts(updatedContacts);

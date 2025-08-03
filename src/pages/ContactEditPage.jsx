@@ -4,10 +4,12 @@ import { contactService } from '../services/contactService';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Toaster, toast } from 'sonner';
+import { useContactHistory, CONTACT_ACTIONS } from '../hooks/useContactHistory';
 
 export default function ContactEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addAction } = useContactHistory();
   const [contact, setContact] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -79,45 +81,80 @@ export default function ContactEditPage() {
     };
   }, [hasUnsavedChanges]);
 
-  // Validación del formulario
+  // Validación individual de campos
+  const validateField = (field, value) => {
+    switch (field) {
+      case 'name':
+        if (!value.trim()) {
+          return 'Name is required';
+        }
+        // Solo letras, espacios y algunos caracteres especiales
+        const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\.\-']+$/;
+        if (!nameRegex.test(value)) {
+          return 'Name can only contain letters and spaces';
+        }
+        return '';
+      
+      case 'phone':
+        if (!value.trim()) {
+          return 'Phone is required';
+        }
+        // Solo números, espacios, paréntesis y guiones
+        const phoneRegex = /^[0-9\s\(\)\-]+$/;
+        if (!phoneRegex.test(value)) {
+          return 'Phone can only contain numbers, spaces, parentheses and hyphens';
+        }
+        return '';
+      
+      case 'email':
+        if (!value.trim()) {
+          return 'Email is required';
+        }
+        // Validación básica de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          return 'Please enter a valid email address';
+        }
+        return '';
+      
+      case 'category':
+        if (!value) {
+          return 'Category is required';
+        }
+        return '';
+      
+      default:
+        return '';
+    }
+  };
+
+  // Validación del formulario completo
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
+    newErrors.name = validateField('name', formData.name);
+    newErrors.phone = validateField('phone', formData.phone);
+    newErrors.email = validateField('email', formData.email);
+    newErrors.category = validateField('category', formData.category);
     
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone is required';
-    } else {
-      const phoneRegex = /^[0-9\s\(\)\-]+$/;
-      if (!phoneRegex.test(formData.phone)) {
-        newErrors.phone = 'Invalid format. Example: (51) 998-123-567';
+    // Filtrar errores vacíos
+    Object.keys(newErrors).forEach(key => {
+      if (newErrors[key] === '') {
+        delete newErrors[key];
       }
-    }
-    
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!formData.email.includes('@')) {
-      newErrors.email = 'Email must contain @';
-    }
-    
-    if (!formData.category) {
-      newErrors.category = 'Category is required';
-    }
+    });
     
     return newErrors;
   };
 
-  // Manejar cambios en el formulario
+  // Manejar cambios en el formulario con validación en tiempo real
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
     
-    // Limpiar error del campo si existe
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
+    // Validar el campo en tiempo real
+    const fieldError = validateField(field, value);
+    setErrors(prev => ({ ...prev, [field]: fieldError }));
   };
 
   // Manejar envío del formulario
@@ -138,6 +175,9 @@ export default function ContactEditPage() {
       };
 
       const updatedContact = await contactService.updateContact(Number(id), updatedContactData);
+      
+      // Registrar la acción en el historial
+      addAction(CONTACT_ACTIONS.UPDATE, updatedContact.name, updatedContact.id, 'Contact updated successfully');
       
       toast.success('Contact updated successfully');
       setHasUnsavedChanges(false);
@@ -322,9 +362,16 @@ export default function ContactEditPage() {
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     placeholder="Enter name"
                     required
-                    className="w-full bg-slate-900/50 text-white border border-slate-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                    className={`w-full bg-slate-900/50 text-white border rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all ${
+                      errors.name ? 'border-red-500' : 
+                      formData.name && !errors.name ? 'border-green-500' : 
+                      'border-slate-700'
+                    }`}
                   />
                   {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
+                  {formData.name && !errors.name && (
+                    <p className="mt-1 text-sm text-green-400">✓ Valid name</p>
+                  )}
                 </div>
                 
                 {/* Campo Teléfono */}
@@ -337,9 +384,16 @@ export default function ContactEditPage() {
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     placeholder="Example: (51) 998-123-567"
                     required
-                    className="w-full bg-slate-900/50 text-white border border-slate-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                    className={`w-full bg-slate-900/50 text-white border rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all ${
+                      errors.phone ? 'border-red-500' : 
+                      formData.phone && !errors.phone ? 'border-green-500' : 
+                      'border-slate-700'
+                    }`}
                   />
                   {errors.phone && <p className="mt-1 text-sm text-red-400">{errors.phone}</p>}
+                  {formData.phone && !errors.phone && (
+                    <p className="mt-1 text-sm text-green-400">✓ Valid phone number</p>
+                  )}
                 </div>
                 
                 {/* Campo Email */}
@@ -352,9 +406,16 @@ export default function ContactEditPage() {
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="Example: example@correo.com"
                     required
-                    className="w-full bg-slate-900/50 text-white border border-slate-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                    className={`w-full bg-slate-900/50 text-white border rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all ${
+                      errors.email ? 'border-red-500' : 
+                      formData.email && !errors.email ? 'border-green-500' : 
+                      'border-slate-700'
+                    }`}
                   />
                   {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
+                  {formData.email && !errors.email && (
+                    <p className="mt-1 text-sm text-green-400">✓ Valid email address</p>
+                  )}
                 </div>
                 
                 {/* Campo Categoría */}
@@ -365,7 +426,11 @@ export default function ContactEditPage() {
                     value={formData.category}
                     onChange={(e) => handleInputChange('category', e.target.value)}
                     required
-                    className="w-full bg-slate-900/50 text-white border border-slate-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                    className={`w-full bg-slate-900/50 text-white border rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all ${
+                      errors.category ? 'border-red-500' : 
+                      formData.category && !errors.category ? 'border-green-500' : 
+                      'border-slate-700'
+                    }`}
                   >
                     <option value="">Select category</option>
                     <option value="trabajo">Work</option>
@@ -373,14 +438,41 @@ export default function ContactEditPage() {
                     <option value="familia">Family</option>
                   </select>
                   {errors.category && <p className="mt-1 text-sm text-red-400">{errors.category}</p>}
+                  {formData.category && !errors.category && (
+                    <p className="mt-1 text-sm text-green-400">✓ Category selected</p>
+                  )}
                 </div>
               </div>
               
+              {/* Indicador de estado del formulario */}
+              <div className="mb-4">
+                {Object.values(errors).every(error => error === '') && formData.name && formData.phone && formData.email && formData.category ? (
+                  <div className="flex items-center text-green-400 text-sm">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    ✓ All fields are valid - Ready to update contact
+                  </div>
+                ) : (
+                  <div className="flex items-center text-yellow-400 text-sm">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    Please fix the validation errors above
+                  </div>
+                )}
+              </div>
+
               {/* Botones */}
               <div className="flex gap-3 mt-6">
                 <button 
                   type="submit" 
-                  className="flex-1 py-2 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
+                  disabled={Object.values(errors).some(error => error !== '')}
+                  className={`flex-1 py-2 px-4 font-medium rounded-lg transition-all shadow-lg flex items-center justify-center gap-2 ${
+                    Object.values(errors).some(error => error !== '') 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                  } text-white`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
