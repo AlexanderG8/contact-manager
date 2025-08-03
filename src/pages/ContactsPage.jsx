@@ -98,19 +98,37 @@ export default function ContactsPage() {
     ];
   });
   
-  // Cargar contactos desde la API al inicializar la aplicación
+  // Cargar contactos automáticamente al montar el componente (HU3 - Lab 08)
   useEffect(() => {
-    const loadContactsFromAPI = async () => {
+    const loadContactsAutomatically = async () => {
       setIsLoadingFromAPI(true);
+      
+      // Primero intentar cargar desde localStorage automáticamente
+      console.log('🔄 Cargando contactos automáticamente desde localStorage...');
+      const savedContacts = safeLocalStorage.getItem('contacts', []);
+      
+      if (savedContacts && savedContacts.length > 0) {
+        // Si hay contactos en localStorage, cargarlos automáticamente
+        setContacts(savedContacts);
+        console.log(`📱 ${savedContacts.length} contacts loaded automatically from localStorage`);
+        
+        toast.success(`📱 ${savedContacts.length} contacts loaded automatically from localStorage`, {
+          duration: 3000
+        });
+        
+        setIsLoadingFromAPI(false);
+        setIsInitializing(false);
+        return;
+      }
+      
+      // Si no hay contactos en localStorage, intentar cargar desde la API
       try {
-        console.log('🔄 Intentando cargar contactos desde la API...');
-        // Usar el método fetchContacts del servicio y extraer los contactos de la respuesta
+        console.log('🔄 No hay contactos en localStorage, intentando cargar desde la API...');
         const { contacts: apiContacts } = await contactService.fetchContacts();
         if (apiContacts && apiContacts.length > 0) {
           setContacts(apiContacts);
           console.log(`✅ ${apiContacts.length} contacts loaded from API`);
           
-          // Mostrar notificación de éxito con Sonner
           toast.success(`🌐 ${apiContacts.length} contacts loaded from API`, {
             duration: 7000
           });
@@ -118,29 +136,18 @@ export default function ContactsPage() {
       } catch (error) {
         console.error('❌ Error loading contacts from API:', error);
         
-        // Intentar cargar desde localStorage como fallback
-        const savedContacts = safeLocalStorage.getItem('contacts', []);
-        if (savedContacts && savedContacts.length > 0) {
-          setContacts(savedContacts);
-          console.log('📱 Contacts loaded from localStorage as fallback');
-          
-          toast.info("📱 Contacts loaded from localStorage", {
-            duration: 3000
-          });
-        } else {
-          // Usar contactos predeterminados si no hay nada guardado
-          console.log('🏠 Using default contacts');
-          toast.info("🏠 Using default contacts", {
-            duration: 3000
-          });
-        }
+        // Usar contactos predeterminados si no hay nada guardado y falla la API
+        console.log('🏠 Using default contacts');
+        toast.info("🏠 Using default contacts", {
+          duration: 3000
+        });
       } finally {
         setIsLoadingFromAPI(false);
         setIsInitializing(false);
       }
     };
     
-    loadContactsFromAPI();
+    loadContactsAutomatically();
   }, []);
   
   // Cargar configuraciones de usuario desde localStorage (Reto Final 2)
@@ -495,6 +502,122 @@ export default function ContactsPage() {
     }
   };
   
+  // Función para guardar contactos manualmente en LocalStorage (HU1 - Lab 08)
+  const handleSaveContactsToLocalStorage = () => {
+    try {
+      // Usar localStorage.setItem() con JSON.stringify() según los criterios de aceptación
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+      
+      // Mostrar notificación de éxito
+      toast.success(`✅ ${contacts.length} contacts saved to LocalStorage manually`, {
+        duration: 3000
+      });
+      
+      console.log('📱 Contacts saved manually to LocalStorage:', contacts.length);
+    } catch (error) {
+      console.error('❌ Error saving contacts to LocalStorage:', error);
+      toast.error('❌ Error saving contacts to LocalStorage');
+    }
+  };
+
+  // Función para cargar contactos manualmente desde LocalStorage (HU2 - Lab 08)
+  const handleLoadContactsFromLocalStorage = () => {
+    try {
+      // Usar localStorage.getItem() con JSON.parse() según los criterios de aceptación
+      const savedContacts = localStorage.getItem('contacts');
+      
+      if (savedContacts) {
+        const parsedContacts = JSON.parse(savedContacts);
+        
+        if (Array.isArray(parsedContacts) && parsedContacts.length > 0) {
+          setContacts(parsedContacts);
+          
+          // Limpiar contacto seleccionado al cargar nuevos datos
+          setSelectContact(null);
+          
+          // Mostrar notificación de éxito
+          toast.success(`✅ ${parsedContacts.length} contacts loaded from LocalStorage`, {
+            duration: 3000
+          });
+          
+          console.log('📱 Contacts loaded manually from LocalStorage:', parsedContacts.length);
+        } else {
+          toast.warning('⚠️ No valid contacts found in LocalStorage');
+        }
+      } else {
+        toast.info('ℹ️ No contacts found in LocalStorage');
+      }
+    } catch (error) {
+      console.error('❌ Error loading contacts from LocalStorage:', error);
+      toast.error('❌ Error loading contacts from LocalStorage');
+    }
+  };
+
+  // Función para sincronizar datos entre API y LocalStorage (HU4 - Lab 08)
+  const handleSyncDataFromAPI = async () => {
+    try {
+      setIsLoadingFromAPI(true);
+      console.log('🔄 Iniciando sincronización de datos desde la API...');
+      
+      // Obtener contactos desde la API
+      const { contacts: apiContacts } = await contactService.fetchContacts();
+      
+      if (apiContacts && Array.isArray(apiContacts) && apiContacts.length > 0) {
+        // Guardar automáticamente en LocalStorage
+        localStorage.setItem('contacts', JSON.stringify(apiContacts));
+        
+        // Actualizar el estado
+        setContacts(apiContacts);
+        setSelectContact(null);
+        
+        toast.success(`🔄 Sincronización exitosa: ${apiContacts.length} contactos actualizados desde la API`, {
+          duration: 4000
+        });
+        console.log('✅ Sincronización completada. Contactos obtenidos:', apiContacts.length);
+      } else {
+        toast.warning('⚠️ No se obtuvieron contactos desde la API', {
+          duration: 3000
+        });
+        console.log('⚠️ La API no devolvió contactos válidos');
+      }
+    } catch (error) {
+      console.error('❌ Error durante la sincronización:', error);
+      toast.error(`❌ Error al sincronizar datos desde la API: ${error.message}`, {
+        duration: 5000
+      });
+    } finally {
+      setIsLoadingFromAPI(false);
+    }
+  };
+
+  // Función para eliminar todos los contactos de LocalStorage (Logro Adicional)
+  const handleClearLocalStorage = () => {
+    try {
+      // Confirmar la acción con el usuario
+      const confirmDelete = window.confirm(
+        '⚠️ ¿Estás seguro de que deseas eliminar TODOS los contactos del LocalStorage?\n\nEsta acción no se puede deshacer.'
+      );
+      
+      if (confirmDelete) {
+        // Eliminar contactos de LocalStorage
+        localStorage.removeItem('contacts');
+        
+        // Limpiar el estado de la aplicación
+        setContacts([]);
+        setSelectContact(null);
+        
+        toast.success('🗑️ Todos los contactos han sido eliminados del LocalStorage');
+        console.log('✅ LocalStorage limpiado - Todos los contactos eliminados');
+      } else {
+        toast.info('ℹ️ Operación cancelada');
+        console.log('Operación de eliminación cancelada por el usuario');
+      }
+    } catch (error) {
+      console.error('Error al eliminar contactos del LocalStorage:', error);
+      toast.error('❌ Error al eliminar contactos del LocalStorage');
+    }
+  };
+
   // Función para importar datos (Reto Final 2 - opcional)
   const handleImportData = (event) => {
     try {
@@ -612,8 +735,60 @@ export default function ContactsPage() {
             </div>
             
             <div className="space-y-6">
-              {/* Botones para exportar/importar datos (Reto Final 2 - opcional) */}
-              <div className="flex gap-4">
+              {/* Botones para exportar/importar datos y guardar en LocalStorage */}
+              <div className="flex gap-4 flex-wrap">
+                {/* Botón Guardar Contactos - HU1 Lab 08 */}
+                <button 
+                  onClick={handleSaveContactsToLocalStorage}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm py-2 px-4 rounded-lg transition-all font-medium"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  Guardar Contactos
+                </button>
+                
+                {/* Botón Cargar Contactos - HU2 Lab 08 */}
+                <button 
+                  onClick={handleLoadContactsFromLocalStorage}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition-all font-medium"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Cargar Contactos
+                </button>
+                
+                {/* Botón Sincronizar Datos - HU4 Lab 08 */}
+                <button 
+                  onClick={handleSyncDataFromAPI}
+                  disabled={isLoadingFromAPI}
+                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 disabled:cursor-not-allowed text-white text-sm py-2 px-4 rounded-lg transition-all font-medium"
+                >
+                  {isLoadingFromAPI ? (
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  )}
+                  {isLoadingFromAPI ? 'Sincronizando...' : 'Sincronizar Datos'}
+                </button>
+                
+                {/* Botón Eliminar Todo - Logro Adicional */}
+                <button 
+                  onClick={handleClearLocalStorage}
+                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm py-2 px-4 rounded-lg transition-all font-medium"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Eliminar Todo
+                </button>
+                
                 <button 
                   onClick={handleExportData}
                   className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white text-sm py-2 px-4 rounded-lg transition-all"
