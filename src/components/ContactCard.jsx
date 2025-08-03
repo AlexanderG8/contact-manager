@@ -1,49 +1,184 @@
-export default function ContactCard({contact, toggleFavorite}) {
+import { useState } from "react";
+
+export default function ContactCard({contact, toggleFavorite, handleNextContact, selectContact, searchTerm, onDelete, onEdit}) {
+  const isSelected = selectContact?.id === contact.id;
+  // Estado para el hover
+  const [isHovered, setIsHovered] = useState(false);
+  // Colores para las categorías (Reto Final 1)
+  const categoryColors = {
+    trabajo: {
+      bg: "bg-blue-500/20",
+      text: "text-blue-400",
+      border: "border-blue-500/30",
+      color: "#2563eb"
+    },
+    personal: {
+      bg: "bg-green-500/20",
+      text: "text-green-400",
+      border: "border-green-500/30",
+      color: "#16a34a"
+    },
+    familia: {
+      bg: "bg-orange-500/20",
+      text: "text-orange-400",
+      border: "border-orange-500/30",
+      color: "#ea580c"
+    },
+    social: {
+      bg: "bg-purple-500/20",
+      text: "text-purple-400",
+      border: "border-purple-500/30",
+      color: "#8b5cf6"
+    }
+  };
+  
+  // Obtener los estilos de la categoría del contacto
+  const getCategoryStyles = () => {
+    if (!contact.category || !categoryColors[contact.category]) {
+      return {
+        bg: "bg-slate-500/20",
+        text: "text-slate-400",
+        border: "border-slate-500/30",
+        color: "#64748b"
+      };
+    }
+    return categoryColors[contact.category];
+  };
+  
+  const categoryStyle = getCategoryStyles();
+  
   return (
-    <div style={{
-      padding: '20px',
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      maxWidth: '300px',
-      margin: '10px'
-    }}>
-      <h3 style={{
-        color: '#f6f8fa',
-        marginTop: 0,
-        marginBottom: '15px',
-        fontSize: '1.5rem'
-      }}>{contact?.name} {contact?.isFavorite ?
+    <div className={`relative overflow-hidden backdrop-blur-sm rounded-xl border transition-all duration-300 ${isSelected 
+      ? 'bg-gradient-to-br from-pink-500/20 to-purple-500/20 border-pink-500/50 shadow-lg shadow-pink-500/10' 
+      : 'bg-slate-800/40 border-slate-700/50 hover:bg-slate-800/60'}`}>
+      
+      {/* Card content */}
+      <div className="p-5">
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-white font-medium text-sm truncate">
+              {searchTerm ? (
+                <span dangerouslySetInnerHTML={{ 
+                  __html: contact?.name.replace(
+                    new RegExp(searchTerm, 'gi'), 
+                    match => `<mark class="bg-pink-500/30 text-white px-1 rounded">${match}</mark>`
+                  ) 
+                }} />
+              ) : (
+                contact?.name
+              )}
+            </h3>
+            
+            
+          </div>
+          {/* Botones de acción */}
+          <div className="flex">
+            {/* Botón de editar */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit && onEdit(contact);
+              }}
+              className={`p-1.5 rounded-full transition-all ${isHovered ? "bg-slate-700/50" : ""}`}
+              title="Edit contact"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400 hover:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            
+            {/* Botón de eliminar */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete && onDelete(contact);
+              }}
+              className={`ml-2 p-1.5 rounded-full transition-all ${isHovered ? "bg-slate-700/50" : ""}`}
+              title="Delete contact"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400 hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+          
+          <button
+            className={`text-lg transition-transform hover:scale-110 ${contact?.isFavorite ? 'text-yellow-400' : 'text-slate-500 hover:text-yellow-400'}`}
+            onClick={() => toggleFavorite(contact.id)}
+            aria-label={contact?.isFavorite ? "Remove from favorites" : "Add to favorites"}
+            title="Toggle favorite"
+          >
+            {contact?.isFavorite ? "⭐" : "⚝"}
+          </button>
+        </div>
+        
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center text-slate-300">
+            {/* Badge de categoría (Reto Final 1) */}
+            <span 
+              className={`text-xs px-2 py-1 rounded-full ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border} border`}
+              data-category={contact.category || "none"}
+            >
+              {contact.category === "trabajo" ? "Work" : 
+               contact.category === "personal" ? "Personal" : 
+               contact.category === "familia" ? "Family" : 
+               contact.category === "social" ? "Social" : "Sin categoría"}
+            </span>
+          </div>
+          <div className="flex items-center text-slate-300">
+            <span className="mr-2">📱</span>
+            <span className="text-sm">
+              {searchTerm ? (
+                <span dangerouslySetInnerHTML={{ 
+                  __html: contact?.phone.replace(
+                    new RegExp(searchTerm, 'gi'), 
+                    match => `<mark class="bg-pink-500/30 text-white px-1 rounded">${match}</mark>`
+                  ) 
+                }} />
+              ) : (
+                contact?.phone
+              )}
+            </span>
+          </div>
+          <div className="flex items-center text-slate-300">
+            <span className="mr-2">✉️</span>
+            <span className="text-sm truncate">
+              {searchTerm ? (
+                <span dangerouslySetInnerHTML={{ 
+                  __html: contact?.email.replace(
+                    new RegExp(searchTerm, 'gi'), 
+                    match => `<mark class="bg-pink-500/30 text-white px-1 rounded">${match}</mark>`
+                  ) 
+                }} />
+              ) : (
+                contact?.email
+              )}
+            </span>
+          </div>
+        </div>
+        
         <button
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            cursor: 'pointer',
-            fontSize: '1.2rem'
-          }}
-          onClick={() => toggleFavorite(contact.id)}
+          onClick={() => {handleNextContact(contact)}}
+          className="w-full mt-2 py-2 px-4 bg-gradient-to-r from-pink-500/80 to-purple-500/80 hover:from-pink-500 hover:to-purple-500 text-white text-sm font-medium rounded-lg transition-all shadow-md flex items-center justify-center gap-1"
         >
-          ⭐
-        </button> :
-        <button
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            cursor: 'pointer',
-            fontSize: '1.2rem'
-          }}
-          onClick={() => toggleFavorite(contact.id)}
-        >
-          ⚝
+          <span>Next</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </button>
-      }</h3>
-      <p>📱 Phone: {contact?.phone}</p>
-      <p>✉️ Email: {contact?.email}</p>
-      {/* <button onClick={() => toggleFavorite(contact.id)}>
-        ⭐
-        {contact.isFavorite ? "Quit Favorite" : "Add Favorite"}
-      </button> */}
+      </div>
+      
+      {/* Selection indicator */}
+      {isSelected && (
+        <div className="absolute -top-1 -right-1 w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center shadow-lg transform rotate-12">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      )}
+      
+      {/* Decorative elements */}
+      <div className="absolute -bottom-10 -right-10 w-20 h-20 rounded-full bg-gradient-to-br from-pink-500/10 to-purple-500/5 blur-xl"></div>
     </div>
   );
 }

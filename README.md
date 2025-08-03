@@ -1,151 +1,226 @@
-# Administrador de Contactos
+# Gestor de Contactos
 
-Una aplicación simple para gestionar contactos construida con React y Vite.
+Una aplicación moderna para gestionar contactos personales con múltiples funcionalidades avanzadas como categorización, búsqueda, ordenamiento, favoritos y persistencia local.
 
-## Requisitos Previos
+![Gestor de Contactos](./src/assets/ManagerContact-Xandev.png)
 
-Antes de ejecutar esta aplicación, asegúrate de tener:
+## Stack Tecnológico
 
-- Node.js (v14 o superior) instalado
-- npm (Gestor de Paquetes de Node) instalado
-- Vite (v4 o superior) instalado
+- **Frontend**: React 19
+- **Estilos**: Tailwind CSS 4
+- **Bundler/Dev Server**: Vite 7
+- **Lenguaje**: JavaScript (ES6+)
+- **Linting**: ESLint 9
+- **Fetch API**: Para realizar peticiones HTTP a la API externa
+- **Variables de Entorno**: Para configuración segura de URLs de API
+- **Notificaciones**: Sonner para notificaciones modernas y personalizables
 
-## Instalación
+## Instrucciones de Instalación
 
-1. Clona este repositorio.
-2. Navega al directorio del proyecto.
-3. Instala las dependencias utilizando npm:
+### Requisitos Previos
 
+- Node.js (versión 18 o superior)
+- npm (incluido con Node.js)
+
+### Pasos de Instalación
+
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/AlexanderG8/contact-manager.git
+   cd contact-manager
+   ```
+
+2. Instala las dependencias:
    ```bash
    npm install
    ```
 
-## Uso
-
-1. Ejecuta la aplicación en modo desarrollo:
-
+3. Inicia el servidor de desarrollo:
    ```bash
    npm run dev
    ```
 
-2. Abre tu navegador y visita en link que te facilita al ejecutar el comando.
+4. Abre tu navegador en `http://localhost:5173`
 
-## Estructura del Proyecto
+## Instrucciones de Uso
 
-- `src/`: Contiene el código fuente de la aplicación.
-  - `components/`: Componentes reutilizables.
-  - `App.jsx`: Componente principal de la aplicación.
-  - `index.jsx`: Punto de entrada de la aplicación.
+### Gestión de Contactos
 
-## Reflexión
+- **Añadir Contacto**: Completa el formulario con nombre, teléfono, email y categoría, luego haz clic en "Save Contact".
+- **Editar Contacto**: Haz clic en el icono de edición (lápiz) en cualquier tarjeta de contacto para acceder al formulario de edición con los datos precargados. Incluye navegación breadcrumb y redirección correcta al cancelar.
+- **Eliminar Contacto**: Haz clic en el icono de papelera en cualquier tarjeta de contacto para eliminar el contacto (se mostrará una confirmación).
+- **Ver Detalles**: Haz clic en cualquier contacto para ver sus detalles completos en el panel lateral.
+- **Marcar Favorito**: Utiliza el icono de estrella para marcar/desmarcar contactos como favoritos.
 
-### ¿Qué diferencia hay entre state y props?
+### Filtros y Búsqueda
 
-Las principales diferencias entre state y props son:
+- **Búsqueda**: Utiliza el campo de búsqueda para filtrar contactos por nombre, teléfono o email.
+- **Filtro por Favoritos**: Activa el interruptor "Show favorites" para mostrar solo los contactos favoritos.
+- **Filtro por Categoría**: Selecciona una categoría del desplegable para filtrar contactos.
+- **Ordenamiento**: Utiliza el desplegable "Sort by..." para ordenar los contactos por diferentes criterios.
 
-- **Props (propiedades)**:
-  - Son inmutables (read-only)
-  - Se pasan de componente padre a hijo
-  - Los cambios vienen desde fuera del componente
-  - Se usan para configurar un componente
+### Respaldo de Datos
 
-- **State (estado)**:
-  - Es mutable y puede cambiar
-  - Es privado y controlado por el componente
-  - Los cambios pueden hacerse dentro del componente
-  - Se usa para datos que cambian con el tiempo
+- **Respaldo de Datos**: Haz clic en "Export Data" para descargar un archivo JSON con todos tus contactos y configuraciones.
+- **Importar**: Haz clic en "Import Data" para cargar un archivo JSON previamente exportado.
 
-Por ejemplo, si tenemos un componente Contador, el valor inicial podría venir como prop, pero el valor actual se mantendría en el state ya que cambia con cada clic.
+### Integración con API Externa
 
+La aplicación implementa el patrón Service Layer para comunicarse con una API externa:
 
-### ¿Qué pasa cuando cambias un state?
+1. **CRUD Completo**: Todas las operaciones (Crear, Leer, Actualizar, Eliminar) están integradas con la API
+2. **Capa de Servicio**: El archivo `contactService.js` encapsula toda la lógica de comunicación con la API
+3. **Carga Automática**: Al abrir la aplicación, se intenta cargar contactos desde la API configurada en `VITE_API_URL`
+4. **Sistema de Fallback**: Si la API no está disponible, se cargan contactos desde localStorage
+5. **Contactos de Ejemplo**: Si no hay datos guardados, se muestran contactos predeterminados
+6. **Notificaciones**: El sistema muestra notificaciones para cada operación CRUD (éxito, error, advertencia)
+7. **Manejo de Errores**: Sistema robusto de manejo de errores con reintentos automáticos
 
-Cuando se modifica un state en React, ocurren varios procesos:
+**Configuración de la API:**
+- Edita el archivo `.env` en la raíz del proyecto
+- Modifica la variable `VITE_API_URL` con la URL de tu API
+- La API debe devolver un array de contactos en formato JSON
 
-1. **Re-renderizado**: React vuelve a renderizar el componente donde se cambió el state.
+## Funcionalidades Implementadas
 
-2. **Proceso por lotes**: React agrupa múltiples actualizaciones de state para optimizar el rendimiento.
+### Mejoras Recientes
 
-3. **Actualización asíncrona**: Los cambios de state son asíncronos, no son inmediatos.
+**Funcionalidad de Edición de Contactos (Actualización Reciente)**
+- **Formulario Precargado**: Al hacer clic en editar, el formulario se puebla automáticamente con la información actual del contacto
+- **Transformación de Datos Mejorada**: Implementación de transformación bidireccional entre el formato de la API y el formato de la aplicación en `fetchContactById`
+- **Navegación Breadcrumb**: Agregada navegación "Contactos > Editando Contacto" para mejor orientación del usuario
+- **Redirección Corregida**: El botón "Cancelar" ahora redirige correctamente a `/contacts` en lugar de la página de detalle
+- **Integración Service Layer**: Uso completo del patrón Service Layer para operaciones de edición con manejo robusto de errores
+- **Experiencia de Usuario Mejorada**: Flujo de edición más intuitivo y consistente con el resto de la aplicación
 
-4. **Propagación**: Si el componente tiene hijos, estos también se pueden re-renderizar si:
-   - Reciben props del componente padre
-   - Usan el mismo estado a través de un contexto
+### Funcionalidades Core
 
-5. **Preservación del DOM**: React usa un Virtual DOM para minimizar las actualizaciones reales del DOM.
+- **CRUD Completo**: Crear, leer, actualizar y eliminar contactos con integración a API
+- **Patrón Service Layer**: Implementación del patrón de diseño Service Layer para separar la lógica de negocio
+- Interfaz de usuario intuitiva y responsive
+- Visualización de contactos en tarjetas con información relevante
+- Selección de contacto para ver detalles completos
+- Confirmación antes de eliminar contactos
 
-Por ejemplo:
-```jsx
-// Componente Padre
-function Padre() {
-  const [contador, setContador] = useState(0);
+### Retos Extra
 
-  function incrementarContador() {
-    setContador(contador + 1);
-  }
+1. **Búsqueda Inteligente**
+   - Búsqueda en tiempo real por nombre, teléfono o email
+   - Resaltado visual de los términos de búsqueda en los resultados
 
-  return (
-    <div>
-      <h1>Contador: {contador}</h1> // Renderiza el valor del state
-      <Hijo contador={contador} /> // Pasa el state como prop al componente hijo
-      <button onClick={incrementarContador}>Incrementar</button>
-    </div>
-  )
-}
-// Componente Hijo
-function Hijo(props) {
-  return (
-    <div>
-      <h2>Contador del Padre: {props.contador}</h2> // Recibe el state como prop
-    </div>
-  )
-}
-```
+2. **Ordenamiento Avanzado**
+   - Ordenar alfabéticamente (A-Z o Z-A)
+   - Ordenar por favoritos primero
+   - Ordenar por fecha de creación (más recientes primero)
 
-Al hacer clic en el botón "Incrementar", el componente Padre re-renderiza,y el componente Hijo también se re-renderiza porque recibe la prop actualizada.
+3. **Validación Avanzada de Teléfono**
+   - Validación de formato de teléfono en tiempo real
+   - Soporte para diferentes formatos (espacios, guiones, paréntesis)
 
-### ¿Cómo se comunican los componentes?
+### Retos Autónomos
 
-En React, los componentes pueden comunicarse de varias formas:
+1. **Indicador de Progreso del Formulario**
+   - Contador visual de campos completados
+   - Barra de progreso que se actualiza en tiempo real
 
-1. **Props (Padre a Hijo)**:
-   - La forma más directa de comunicación
-   - El padre pasa datos al hijo a través de props
-   ```jsx
-   function Padre() {
-     return <Hijo mensaje="Hola desde el padre" />
-   }
-   ```
+2. **Selección Automática y Sistema de Notificaciones**
+   - Selección automática del contacto recién añadido
+   - Sistema de notificaciones moderno con Sonner
+   - Diferentes tipos de notificaciones según el contexto (éxito, error, información)
+   - Personalización de duración y estilo de las notificaciones
 
-2. **Callbacks (Hijo a Padre)**:
-   - El padre pasa una función como prop al hijo
-   - El hijo llama a esta función para comunicarse con el padre
-   ```jsx
-   function Padre() {
-     const handleClick = (datos) => console.log(datos);
-     return <Hijo onAction={handleClick} />
-   }
-   ```
+3. **Prevención de Contactos Duplicados**
+   - Validación para evitar nombres duplicados
+   - Mensaje de error específico para contactos duplicados
 
-3. **Context API (Comunicación Global)**:
-   - Permite compartir datos sin pasar props manualmente
-   - Útil para datos que necesitan muchos componentes
-   ```jsx
-   const MiContexto = React.createContext();
-   function App() {
-     return (
-       <MiContexto.Provider value={datos}>
-         <Componentes/>
-       </MiContexto.Provider>
-     )
-   }
-   ```
+### Retos Finales
 
-4. **State Management (Redux, Zustand, etc.)**:
-   - Para aplicaciones más complejas
-   - Gestión centralizada del estado
-   - Comunicación entre cualquier componente
+1. **Categorías de Contactos**
+   - Asignación de categorías (Trabajo, Personal, Familia)
+   - Filtrado por categoría
+   - Visualización con código de colores por categoría
+   - Contadores de contactos por categoría
 
-5. **Event Bus/Pub-Sub**:
-   - Para comunicación entre componentes no relacionados
-   - Menos común en React moderno
+2. **Persistencia Local**
+   - Almacenamiento automático en localStorage
+   - Carga de datos al iniciar la aplicación
+   - Exportación e importación de datos
+   - Manejo de errores en operaciones de almacenamiento
+
+3. **Modo Edición Mejorado**
+   - Edición de contactos existentes con formulario precargado automáticamente
+   - Validación en tiempo real durante la edición
+   - Confirmación antes de descartar cambios no guardados
+   - Navegación breadcrumb "Contactos > Editando Contacto"
+   - Botón de cancelar que redirige correctamente a la página principal
+   - Transformación automática de datos entre formato API y formato de aplicación
+   - Integración completa con el Service Layer para operaciones de actualización
+
+## Decisiones Técnicas y Patrones Aplicados
+
+### Patrón Service Layer
+
+Se ha implementado el patrón Service Layer para separar la lógica de negocio de la interfaz de usuario:
+
+- **Encapsulamiento**: Toda la lógica de comunicación con la API está encapsulada en `contactService.js`
+- **Operaciones CRUD**: Implementación completa de métodos para crear, leer, actualizar y eliminar contactos
+- **Transformación de Datos**: El servicio se encarga de transformar los datos entre el formato de la API (fullname, phonenumber, type) y el formato interno (name, phone, category) tanto para operaciones de lectura como de escritura
+- **Manejo de Errores**: Sistema robusto con reintentos automáticos y logging detallado
+- **Estadísticas**: El servicio mantiene estadísticas de uso (peticiones exitosas, fallidas, tiempos de respuesta)
+- **Singleton**: Se exporta una única instancia del servicio para mantener el estado
+
+### Arquitectura de Componentes
+
+- **Componentes Funcionales**: Uso exclusivo de componentes funcionales con React Hooks para gestión de estado y efectos secundarios.
+- **Prop Drilling Controlado**: Paso de props entre componentes de forma estructurada para mantener un flujo de datos predecible.
+
+### Gestión de Estado
+
+- **useState**: Para gestión de estado local en componentes.
+- **useEffect**: Para efectos secundarios como cargar/guardar datos en localStorage.
+- **useMemo**: Para optimizar el rendimiento en operaciones costosas como filtrado y ordenamiento.
+- **Carga de Datos**: Sistema de prioridades: API → localStorage → datos por defecto
+
+### Servicios y API
+
+- **Patrón Service Layer**: Implementación completa del patrón Service Layer en `/src/services/contactService.js`
+- **Operaciones CRUD Completas**: Implementación de Create, Read, Update y Delete integradas con la API
+- **Transformación Bidireccional**: `fetchContactById` ahora transforma automáticamente los datos de la API al formato interno de la aplicación
+- **Consistencia de Datos**: Todos los métodos del servicio (fetchContacts, fetchContactById, createContact, updateContact) utilizan la misma transformación de datos
+- **Manejo de Errores**: Try-catch comprehensivo con logging detallado y sistema de reintentos
+- **Configuración**: Variables de entorno para URLs de API seguras
+- **Fallback Automático**: Si la API falla, el sistema guarda los datos localmente
+- **Notificaciones Integradas**: Cada operación CRUD muestra notificaciones de éxito o error
+
+### Patrones de Diseño
+
+- **Controlled Components**: Todos los inputs del formulario son componentes controlados.
+- **Conditional Rendering**: Renderizado condicional basado en estado para mostrar/ocultar elementos.
+- **Lifting State Up**: El estado principal se mantiene en el componente App y se pasa a los componentes hijos.
+- **Composition**: Composición de componentes pequeños para crear interfaces más complejas.
+
+### Optimizaciones
+
+- **Memoización**: Uso de useMemo para evitar recálculos innecesarios en filtrado y ordenamiento.
+- **Lazy Initialization**: Inicialización perezosa de estado para cargar datos desde localStorage.
+- **Batch Updates**: Agrupación de actualizaciones de estado para reducir renderizados.
+
+### Manejo de Errores
+
+- **Try-Catch**: Implementación de bloques try-catch para operaciones propensas a errores.
+- **Validación Defensiva**: Comprobación de existencia de datos antes de acceder a propiedades.
+- **Feedback Visual**: Sistema de notificaciones con Sonner para informar al usuario sobre errores o acciones exitosas, con diferentes tipos de notificaciones (success, error, info) y personalización de duración.
+
+### Estilizado
+
+- **Utility-First CSS**: Uso de Tailwind CSS para un desarrollo rápido y consistente.
+- **Responsive Design**: Diseño adaptable a diferentes tamaños de pantalla.
+- **Dark Mode**: Interfaz con tema oscuro para mejor experiencia visual.
+
+### Sistema de Notificaciones
+
+- **Librería Sonner**: Implementación de Sonner para un sistema de notificaciones moderno y elegante.
+- **Tipos de Notificaciones**: Soporte para diferentes tipos de notificaciones (success, error, info) con estilos visuales distintos.
+- **Personalización**: Configuración de duración, posición y estilo de las notificaciones.
+- **Experiencia de Usuario**: Animaciones suaves y diseño moderno para mejorar la experiencia del usuario.
+- **Código Limpio**: Eliminación de lógica repetitiva para mostrar/ocultar notificaciones, resultando en un código más mantenible.
