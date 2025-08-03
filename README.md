@@ -47,7 +47,7 @@ Una aplicación moderna para gestionar contactos personales con múltiples funci
 ### Gestión de Contactos
 
 - **Añadir Contacto**: Completa el formulario con nombre, teléfono, email y categoría, luego haz clic en "Save Contact".
-- **Editar Contacto**: Haz clic en el icono de edición (lápiz) en cualquier tarjeta de contacto para modificar sus datos.
+- **Editar Contacto**: Haz clic en el icono de edición (lápiz) en cualquier tarjeta de contacto para acceder al formulario de edición con los datos precargados. Incluye navegación breadcrumb y redirección correcta al cancelar.
 - **Eliminar Contacto**: Haz clic en el icono de papelera en cualquier tarjeta de contacto para eliminar el contacto (se mostrará una confirmación).
 - **Ver Detalles**: Haz clic en cualquier contacto para ver sus detalles completos en el panel lateral.
 - **Marcar Favorito**: Utiliza el icono de estrella para marcar/desmarcar contactos como favoritos.
@@ -82,6 +82,16 @@ La aplicación implementa el patrón Service Layer para comunicarse con una API 
 - La API debe devolver un array de contactos en formato JSON
 
 ## Funcionalidades Implementadas
+
+### Mejoras Recientes
+
+**Funcionalidad de Edición de Contactos (Actualización Reciente)**
+- **Formulario Precargado**: Al hacer clic en editar, el formulario se puebla automáticamente con la información actual del contacto
+- **Transformación de Datos Mejorada**: Implementación de transformación bidireccional entre el formato de la API y el formato de la aplicación en `fetchContactById`
+- **Navegación Breadcrumb**: Agregada navegación "Contactos > Editando Contacto" para mejor orientación del usuario
+- **Redirección Corregida**: El botón "Cancelar" ahora redirige correctamente a `/contacts` en lugar de la página de detalle
+- **Integración Service Layer**: Uso completo del patrón Service Layer para operaciones de edición con manejo robusto de errores
+- **Experiencia de Usuario Mejorada**: Flujo de edición más intuitivo y consistente con el resto de la aplicación
 
 ### Funcionalidades Core
 
@@ -137,11 +147,14 @@ La aplicación implementa el patrón Service Layer para comunicarse con una API 
    - Exportación e importación de datos
    - Manejo de errores en operaciones de almacenamiento
 
-3. **Modo Edición**
-   - Edición de contactos existentes
+3. **Modo Edición Mejorado**
+   - Edición de contactos existentes con formulario precargado automáticamente
    - Validación en tiempo real durante la edición
    - Confirmación antes de descartar cambios no guardados
-   - Indicador visual del modo edición
+   - Navegación breadcrumb "Contactos > Editando Contacto"
+   - Botón de cancelar que redirige correctamente a la página principal
+   - Transformación automática de datos entre formato API y formato de aplicación
+   - Integración completa con el Service Layer para operaciones de actualización
 
 ## Decisiones Técnicas y Patrones Aplicados
 
@@ -151,7 +164,7 @@ Se ha implementado el patrón Service Layer para separar la lógica de negocio d
 
 - **Encapsulamiento**: Toda la lógica de comunicación con la API está encapsulada en `contactService.js`
 - **Operaciones CRUD**: Implementación completa de métodos para crear, leer, actualizar y eliminar contactos
-- **Transformación de Datos**: El servicio se encarga de transformar los datos entre el formato de la API y el formato interno
+- **Transformación de Datos**: El servicio se encarga de transformar los datos entre el formato de la API (fullname, phonenumber, type) y el formato interno (name, phone, category) tanto para operaciones de lectura como de escritura
 - **Manejo de Errores**: Sistema robusto con reintentos automáticos y logging detallado
 - **Estadísticas**: El servicio mantiene estadísticas de uso (peticiones exitosas, fallidas, tiempos de respuesta)
 - **Singleton**: Se exporta una única instancia del servicio para mantener el estado
@@ -172,6 +185,8 @@ Se ha implementado el patrón Service Layer para separar la lógica de negocio d
 
 - **Patrón Service Layer**: Implementación completa del patrón Service Layer en `/src/services/contactService.js`
 - **Operaciones CRUD Completas**: Implementación de Create, Read, Update y Delete integradas con la API
+- **Transformación Bidireccional**: `fetchContactById` ahora transforma automáticamente los datos de la API al formato interno de la aplicación
+- **Consistencia de Datos**: Todos los métodos del servicio (fetchContacts, fetchContactById, createContact, updateContact) utilizan la misma transformación de datos
 - **Manejo de Errores**: Try-catch comprehensivo con logging detallado y sistema de reintentos
 - **Configuración**: Variables de entorno para URLs de API seguras
 - **Fallback Automático**: Si la API falla, el sistema guarda los datos localmente
