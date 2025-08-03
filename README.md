@@ -3,9 +3,12 @@
 > **Una aplicación web completa para gestión de contactos desarrollada con React 19, Tailwind CSS y arquitectura moderna. Implementa patrones de diseño avanzados, integración con APIs externas y persistencia de datos local.**
 
 ![Home Page](./src/assets/homepage.png)
+![Dashboard](./src/assets/DashboardPage.png)
 ![Contacts Page](./src/assets/ContactsPage.png)
 ![Add Contact](./src/assets/NewContactPage.png)
 ![Edit Contact](./src/assets/EditContactPage.png)
+![Contact History](./src/assets/HistoryPage.png)
+![About](./src/assets/AboutPage.png)
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
@@ -23,6 +26,8 @@
 - **Categorización**: Sistema de categorías con código de colores (Trabajo, Personal, Familia)
 - **Sistema de Favoritos**: Marcado y filtrado de contactos favoritos
 - **Ordenamiento Avanzado**: Múltiples criterios de ordenamiento (alfabético, favoritos, fecha)
+- **Dashboard Interactivo**: Panel de control con estadísticas, gráficos y métricas en tiempo real
+- **Página About**: Información completa sobre la aplicación, tecnologías y desarrollador
 
 ### 🎯 Funcionalidades Avanzadas
 
@@ -32,6 +37,10 @@
 - **Responsive Design**: Interfaz adaptable a todos los dispositivos
 - **Dark Mode**: Tema oscuro moderno y elegante
 - **Prevención de Duplicados**: Sistema inteligente para evitar contactos duplicados
+- **Visualización de Datos**: Gráficos interactivos con Recharts para análisis de contactos
+- **Métricas en Tiempo Real**: Estadísticas dinámicas de contactos, favoritos y categorías
+- **Navegación Completa**: Sistema de navegación con breadcrumbs y enlaces directos
+- **Información del Proyecto**: Página dedicada con detalles técnicos y enlaces del desarrollador
 
 ## 🛠️ Stack Tecnológico
 
@@ -106,7 +115,9 @@ src/
 │   └── ...
 ├── pages/              # Páginas principales
 │   ├── ContactsPage.jsx    # Página principal de contactos
+│   ├── DashboardPage.jsx   # Dashboard con estadísticas
 │   ├── ContactDetailPage.jsx
+│   ├── AboutPage.jsx       # Página de información
 │   └── ...
 ├── services/           # Capa de servicios
 │   └── contactService.js   # Servicio de contactos
@@ -180,6 +191,14 @@ class ContactService {
 - [x] Exportación/Importación JSON
 - [x] Sistema de respaldo automático
 
+### ✅ Dashboard y Analytics
+
+- [x] Dashboard interactivo con métricas en tiempo real
+- [x] Gráficos de barras, líneas y pie charts
+- [x] Estadísticas de contactos por categoría
+- [x] Análisis de contactos favoritos y recientes
+- [x] Acciones rápidas desde el dashboard
+
 ### ✅ Experiencia de Usuario
 
 - [x] Notificaciones modernas con Sonner
@@ -187,6 +206,8 @@ class ContactService {
 - [x] Responsive design
 - [x] Dark mode
 - [x] Indicadores de progreso
+- [x] Página About con información completa
+- [x] Navegación intuitiva con breadcrumbs
 
 ## 🎯 Casos de Uso
 
@@ -215,6 +236,7 @@ class ContactService {
 ## 👨‍💻 Autor
 
 **Alexander Gomez**
+
 - LinkedIn: [Alexander Gomez](https://www.linkedin.com/in/marcello-alexander-gomez-gomez-130587268/)
 - GitHub: [@AlexanderG8](https://github.com/AlexanderG8)
 - Portfolio: [Mi Portfolio](https://alexanderg8.github.io/my-portfolio-web/)

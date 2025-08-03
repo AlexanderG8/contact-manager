@@ -6,6 +6,7 @@ import ContactDetailPage from './pages/ContactDetailPage';
 import ContactEditPage from './pages/ContactEditPage';
 import ContactNewPage from './pages/ContactNewPage';
 import ContactHistoryPage from './pages/ContactHistoryPage';
+import AboutPage from './pages/AboutPage';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/contacts/edit/:id" element={<ContactEditPage />} />
           <Route path="/contacts/new" element={<ContactNewPage />} />
           <Route path="/contacts/history" element={<ContactHistoryPage />} />
+          <Route path="/about" element={<AboutPage />} />
         </Routes>
     </Router>
   );
