@@ -2,7 +2,10 @@
 
 > **Una aplicación web completa para gestión de contactos desarrollada con React 19, Tailwind CSS y arquitectura moderna. Implementa patrones de diseño avanzados, integración con APIs externas y persistencia de datos local.**
 
-![Contact Manager](./src/assets/ManagerContact-Xandev.png)
+![Home Page](./src/assets/HomePage.png)
+![Contacts Page](./src/assets/ContactsPage.png)
+![Add Contact](./src/assets/NewContactPage.png)
+![Edit Contact](./src/assets/EditContactPage.png)
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
@@ -212,7 +215,7 @@ class ContactService {
 ## 👨‍💻 Autor
 
 **Alexander Gomez**
-- LinkedIn: [Tu perfil de LinkedIn](https://www.linkedin.com/in/marcello-alexander-gomez-gomez-130587268/)
+- LinkedIn: [Alexander Gomez](https://www.linkedin.com/in/marcello-alexander-gomez-gomez-130587268/)
 - GitHub: [@AlexanderG8](https://github.com/AlexanderG8)
 - Portfolio: [Mi Portfolio](https://alexanderg8.github.io/my-portfolio-web/)
 
